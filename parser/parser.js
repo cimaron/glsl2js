@@ -20,11 +20,16 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 function glsl_state(options) {
-
-	this.options = util._extend({
+	var i;
+	
+	this.options = {
 		target : 0,
 		language_version : 100,
-	}, options);
+	};
+	
+	for (i in options) {
+		this.options[i] = options[i];	
+	}
 
 	this.symbols = new SymbolTable();
 	this.translation_unit = [];

@@ -56,8 +56,7 @@ var builtin = {
 	oper : {
 		"!" : {
 			"bool:bool" : [
-				"ABS %1.x %2.x",
-				"SGE %1.x 0.0 %1.x"
+				"SEQ %1.x %2.x 0.0"
 				]
 			},
 		"+" : {

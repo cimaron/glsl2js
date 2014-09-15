@@ -30,7 +30,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE		 OR OTHER DEALINGS IN THE SOFTWARE.
  */
 glsl.generate = function(state) {
 
-	var irs = new Ir();
+	var irs = new Ir(state.options.target);
 
 	try {
 		for (var i = 0; i < state.translation_unit.length; i++) {
@@ -316,7 +316,6 @@ AstExpression.prototype.ir_op = function(state, irs) {
 			break;
 
 		case '!':
-			irs.push(new IrComment(util.format("(%s %s)", this.oper, se[0].Dest), this.location));
 			this.ir_generate(state, irs, 1);
 			break;
 
@@ -518,7 +517,7 @@ AstExpression.prototype.ir_generate = function(state, irs, len) {
 	}
 
 	if (len == 1) {
-		comment = util.format("(%s %s) => %s %s", this.oper, se[1].Dest, this.Type, this.Dest);
+		comment = util.format("(%s %s) => %s %s", this.oper, se[0].Dest, this.Type, this.Dest);
 	} else if (len == 2) {
 		comment = util.format("(%s %s %s) => %s %s", se[0].Dest, this.oper, se[1].Dest, this.Type, this.Dest);
 	} else if (len == 3) {
@@ -680,7 +679,7 @@ AstExpression.prototype.ir_field = function(state, irs) {
 			ir_error(util.format("Invalid field selection %s.%s", se, field), this);
 		}
 
-		this.Dest = util.format("%s.%s", se.Dest, field)
+		this.Dest = util.format("%s.%s", se.Dest, Ir.normalizeSwizzle(field));
 	}
 }
 
@@ -692,32 +691,26 @@ AstExpression.prototype.ir_field = function(state, irs) {
  */
 AstSelectionStatement.prototype.ir = function(state, irs) {
 	var ir, cond;
-debugger;
+
 	this.condition.ir(state, irs);
 	//@todo: add a check that condition is bool type?
 
-	irs.push(new IrComment(util.format("if %s then", entry.name, dest.join(", "), this.Type, this.Dest), this.location));
-
-	cond = util.format("%s.x", irs.getTemp());
+	irs.push(new IrComment(util.format("if %s then", this.condition.Dest), this.location));
 
 	//set a flag based on the result
 	ir = new IrInstruction('IF', this.condition.Dest);
 	irs.push(ir);
 
-	//if conditional is set, all subsequent output assignments will use the condition result to set using (MAD dest, cond, (new - old), old)
-	conditional.push(cond);
-	
 	this.then_statement.ir(state, irs);
 
-	irs.push(new IrInstruction('ELSE'));
-
 	if (this.else_statement) {
-		ir = new IR('SGE', cond, "0.0", cond);
-		irs.push(ir);
-		ir_compound_statement(this.else_statement);
+
+		irs.push(new IrInstruction('ELSE'));
+
+		this.else_statement.ir(state, irs);
 	}
 
-	conditional.pop();
+	irs.push(new IrInstruction('ENDIF'));
 }
 
 

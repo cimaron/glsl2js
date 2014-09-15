@@ -18,15 +18,15 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-var gulp = require('gulp'),
-	rename = require('gulp-rename'),
-	uglify = require('gulp-uglify'),
+var del = require('del'),
+	gulp = require('gulp'),
+	browserify = require('gulp-browserify'),
 	concat = require('gulp-concat'),
+	include = require('gulp-include'),
 	jison = require('gulp-jison'),
-	del = require('del'),
-	browserify = require('gulp-browserify')
-	//jslint = require('gulp-jslint')
-	jshint = require('gulp-jshint')
+	jshint = require('gulp-jshint'),
+	rename = require('gulp-rename'),
+	uglify = require('gulp-uglify')
 	;
 
 gulp.task('clean', function(cb) {
@@ -59,6 +59,7 @@ gulp.task('generator', function() {
 		'ir/ir.js',
 		'ir/operand.js',
 		'ir/instruction.js',
+		'output/javascript.js'
 		])
 		.pipe(concat('ir.js'))
 		.pipe(gulp.dest('build'))
@@ -66,8 +67,8 @@ gulp.task('generator', function() {
 
 gulp.task('glsl', ['parser', 'generator'], function() {
 	return gulp.src([
-		//'util.js',
 		'glsl.js',
+		'library/util.js',
 		'build/parser.js',
 		'build/ir.js'
 		])
@@ -79,14 +80,6 @@ gulp.task('errors', ['glsl'], function() {
 	return gulp.src([
 		'build/glsl.js'
 	])
-	/*
-	.pipe(jslint({
-		nomen : true,
-		white : true,
-		node : true,
-		plusplus  : true,
-	}));
-	*/
 	.pipe(jshint())
 	;
 });
@@ -95,17 +88,21 @@ gulp.task('default', ['clean', 'web']);
 
 
 gulp.task('web', ['glsl'], function() {
-	return gulp.src('build/glsl.js')
-		.pipe(browserify({
-			insertGlobals : true
-		}))
+	return gulp.src([
+		'web.js'
+		])
+		.pipe(include())
+		/*.pipe(uglify({
+			mangle : false,
+			output : {
+				beautify : true
+			},
+			compress : false,
+			preserveComments : function(node, comment) {
+				return !comment.value.match(/Copyright/);
+			}
+		}))*/
 		.pipe(rename('glsl.web.js'))
 		.pipe(gulp.dest('build'))
 });
-
-/*
-gulp.task('watch', function () {
-	gulp.watch('./parser/*.jison', ['jison']);
-});
-*/
 

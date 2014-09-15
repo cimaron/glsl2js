@@ -1090,8 +1090,14 @@ simple_statement:
 
 /* Line: 1505 */
 compound_statement:
-			'{' '}'
-		|	'{' statement_list '}'
+		  '{' '}' {
+				$$ = new AstCompoundStatement(true);
+				$$.setLocation(@1); }
+		| '{' statement_list '}' {
+			  	yy.state.symbols.push_scope();
+				$$ = new AstCompoundStatement(true, $2);
+				$$.setLocation(@1);
+				yy.state.symbols.pop_scope(); }
 		;
 
 /* Line: 1525 */
@@ -1143,8 +1149,12 @@ selection_statement:
 
 /* Line: 1591 */
 selection_rest_statement:
-		  statement 'ELSE' statement
-		| statement %prec THEN
+		  statement 'ELSE' statement { debugger;
+		  		$$ = {};
+				$$.then_statement = $1;
+				$$.else_statement = $3; }
+		| statement %prec THEN  {
+				$$.then_statement = $2; }
 		;
 
 /* Line: 1604 */

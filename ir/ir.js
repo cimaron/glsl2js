@@ -25,7 +25,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE		 OR OTHER DEALINGS IN THE SOFTWARE.
  *
  * Stores IR code tree
  */	
-function Ir() {
+function Ir(target) {
+
+	this.target = target;
 
 	this.symbols = {
 		uniform : {
@@ -93,6 +95,23 @@ Ir.isSwizzle = function(swz) {
 	if (swz.match(/[stpq]+/)) {
 		return true;	
 	}
+};
+
+Ir.normalizeSwizzle = function(swz) {
+	var n;
+
+	if (!this.isSwizzle(swz)) {
+		return null;
+	}
+	
+	n = swz
+	   .replace(/[rs]/g, 'x')
+	   .replace(/[gt]/g, 'y')
+	   .replace(/[bp]/g, 'z')
+	   .replace(/[aq]/g, 'w')
+	   ;
+
+	return n;
 };
 
 Ir.swizzles = ["xyzw", "rgba", "stpq"];

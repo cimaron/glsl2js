@@ -19,26 +19,11 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-function isObject(arg) {
-  return typeof arg === 'object' && arg !== null;
-}
+(function() {
 
-/**
- * Node.js util._extend
- *
- * @url   https://github.com/joyent/node/blob/master/lib/util.js
- */
-module.exports._extend = function(origin, add) {
-  // Don't do anything if add isn't an object
-  if (!add || !isObject(add)) return origin;
+	//= require build/glsl.js
 
-  var keys = Object.keys(add);
-  var i = keys.length;
-  while (i--) {
-    origin[keys[i]] = add[keys[i]];
-  }
-  return origin;
-};
+	this.glsl = glsl;
 
-
+}());
 
