@@ -47,7 +47,8 @@ gulp.task('parser', ['jison'], function() {
 		'parser/ast.js',
 		'ir/builtin.js',
 		'build/grammar.js',
-		'parser/parser.js'
+		'parser/parser.js',
+		'parser/lexer.js'
 		])
 		.pipe(concat('parser.js'))
 		.pipe(gulp.dest('build'))
@@ -59,7 +60,8 @@ gulp.task('generator', function() {
 		'ir/ir.js',
 		'ir/operand.js',
 		'ir/instruction.js',
-		'output/javascript.js'
+		'output/javascript/program.js',
+		'output/javascript/context.js'
 		])
 		.pipe(concat('ir.js'))
 		.pipe(gulp.dest('build'))
@@ -72,7 +74,7 @@ gulp.task('glsl', ['parser', 'generator'], function() {
 		'build/parser.js',
 		'build/ir.js'
 		])
-		.pipe(concat('glsl.js'))
+		.pipe(concat('glsl.part.js'))
 		.pipe(gulp.dest('build'))
 });
 
@@ -84,12 +86,10 @@ gulp.task('errors', ['glsl'], function() {
 	;
 });
 
-gulp.task('default', ['clean', 'web']);
+gulp.task('default', ['clean', 'glsl'], function() {
 
-
-gulp.task('web', ['glsl'], function() {
 	return gulp.src([
-		'web.js'
+		'index.js'
 		])
 		.pipe(include())
 		/*.pipe(uglify({
@@ -102,7 +102,8 @@ gulp.task('web', ['glsl'], function() {
 				return !comment.value.match(/Copyright/);
 			}
 		}))*/
-		.pipe(rename('glsl.web.js'))
+		.pipe(rename('glsl.js'))
 		.pipe(gulp.dest('build'))
+		;
 });
 

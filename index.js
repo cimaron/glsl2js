@@ -21,7 +21,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 (function() {
 
-	//= require build/glsl.js
+	//= require build/glsl.part.js
 
 	this.glsl = glsl;
 
