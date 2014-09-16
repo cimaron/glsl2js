@@ -34,6 +34,10 @@ function Ir(target) {
 			next : 0,
 			entries : {}
 		},
+		attribute : {
+			next : 0,
+			entries : {}
+		},
 		temp : {
 			next : 0
 		}
@@ -66,6 +70,26 @@ Ir.prototype.getUniform = function(entry) {
 	if (!table.entries[entry.name]) {
 		table.entries[entry.name] = entry;
 		entry.out = 'uniform@' + table.next;
+		table.next += types[entry.type].slots;
+	}
+
+	return entry.out;
+};
+
+/**
+ * Add a symbol table entry into the local symbol table and return a new IR identifier
+ *
+ * @param   object   entry   Symbol table entry
+ *
+ * @return  string
+ */
+Ir.prototype.getAttribute = function(entry) {
+
+	var table = this.symbols.attribute, out;
+
+	if (!table.entries[entry.name]) {
+		table.entries[entry.name] = entry;
+		entry.out = 'attribute@' + table.next;
 		table.next += types[entry.type].slots;
 	}
 

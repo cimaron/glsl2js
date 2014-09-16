@@ -122,7 +122,11 @@ AstDeclaratorList.prototype.ir = function(state, irs) {
 			case AstTypeQualifier.flags.uniform:
 				entry.out = irs.getUniform(entry);
 				break;
-			
+
+			case AstTypeQualifier.flags.attribute:
+				entry.out = irs.getAttribute(entry);
+				break;
+
 			default:
 				entry.out = irs.getTemp();
 
