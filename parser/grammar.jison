@@ -211,17 +211,17 @@ HASH		^{SPC}#{SPC}
 			    this.yylval = parseFloat(yytext);
 			    return 'FLOATCONSTANT';
 			}
-"0"[xX][0-9a-fA-F]+[uU]?	{
+"0"[xX][0-9a-fA-F]+	{
 			    this.yylval = parseInt(yytext + 2, 16);
-			    return this.IS_UINT(yytext) ? 'UINTCONSTANT' : 'INTCONSTANT';
+			    return 'INTCONSTANT';
 			}
-"0"[0-7]*[uU]?		{
+"0"[0-7]*		{
 			    this.yylval = parseInt(yytext, 8);
-			    return this.IS_UINT(yytext) ? 'UINTCONSTANT' : 'INTCONSTANT';
+			    return 'INTCONSTANT';
 			}
-[1-9][0-9]*[uU]?	{
+[1-9][0-9]*	{
 				this.yylval = parseInt(yytext);
-				return this.IS_UINT(yytext) ? 'UINTCONSTANT' : 'INTCONSTANT';
+				return 'INTCONSTANT';
 			}
 "true"			{
 			    this.yylval = 1;
@@ -976,7 +976,6 @@ basic_type_specifier_nonarray:
 		|	'FLOAT'
 		|	'DOUBLE'
 		|	'INT'
-		|	'UINT'
 		|	'BOOL'
 		|	'VEC2'
 		|	'VEC3'
