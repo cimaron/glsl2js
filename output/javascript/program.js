@@ -44,30 +44,30 @@ function GlslProgramJavascript() {
 var proto = GlslProgramJavascript.prototype;
 
 GlslProgramJavascript.translation_table = {
-	'ABS' : '%1* = Math.abs(%2*)',
-	'ADD' : '%1* = (%2*) + (%3*)',
+	'ABS' : '%1.* = Math.abs(%2.*)',
+	'ADD' : '%1.* = (%2.*) + (%3.*)',
 	//'ARL' : false,
-	'CMP' : '%1* = ((%2* < 0.0) ? (%3*) : (%4*))',
+	'CMP' : '%1.* = ((%2.* < 0.0) ? (%3.*) : (%4.*))',
 	//'COS' : 'Math.cos(%2)',
-	'DP3' : '%1[0] = ((%2[0]) * (%3[0]) + (%2[1]) * (%3[1]) + (%2[2]) * (%3[2]))',
-	'DP4' : '%1[0] = ((%2[0]) * (%3[0]) + (%2[1]) * (%3[1]) + (%2[2]) * (%3[2]) + (%2[3]) * (%3[3]))',
+	'DP3' : '%1.x = ((%2.x) * (%3.x) + (%2.y) * (%3.y) + (%2.z) * (%3.z))',
+	'DP4' : '%1.x = ((%2.x) * (%3.x) + (%2.y) * (%3.y) + (%2.z) * (%3.z) + (%2.w) * (%3.w))',
 	//'DPH' : '%1.* = (%2.x * %3.x + %2.y * %3.y + %2.z + %3.z + %3.w)',
 	//'DST' : '%1.* = [1, %2.y * %3.y, %2.z, %3.w]',
 	'ELSE'  : '} else {',
 	'ENDIF' : '}', 
-	'IF'  : 'if (%1[0]) {',
+	'IF'  : 'if (%1.x) {',
 	'MAD' : '%1.* = (%2.* * %3.*) + %4.*;',
-	'MAX' : '%1* = Math.max((%2*), (%3*))',
+	'MAX' : '%1.* = Math.max((%2.*), (%3.*))',
 	'MOV' : '%1.* = %2.*;',
 	'MUL' : '%1.* = %2.* * %3.*;',
-	'POW' : '%1[0] = Math.pow(%2[0], %3[0])',
+	'POW' : '%1.x = Math.pow(%2.x, %3.x)',
 	'RET' : 'return',
-	'RSQ' : '%1* = (1.0 / Math.sqrt(%2*))',
+	'RSQ' : '%1.* = (1.0 / Math.sqrt(%2.*))',
 	'SEQ' : '%1.* = (%2.* === %3.*) ? 1.0 : 0.0',
-	'SGE' : '%1* = (%2* >= %3*) ? (1.0) : (0.0)',
-	'SLT' : '%1* = (%2* <  %3*) ? (1.0) : (0.0)',
-	'SUB' : '%1* = (%2*) - (%3*)',
-	'TEX' : '%1.* = tex(%3, %2[0], %2[1], 0)'
+	'SGE' : '%1.* = (%2.* >= %3.*) ? (1.0) : (0.0)',
+	'SLT' : '%1.* = (%2.* <  %3.*) ? (1.0) : (0.0)',
+	'SUB' : '%1.* = (%2.*) - (%3.*)',
+	'TEX' : '%1.* = tex(%3, %2.x, %2.y, 0)'
 }; 
 
 
@@ -198,23 +198,15 @@ proto.instruction = function(ins) {
 	src.push(this.buildComponents(ins.s3));
 
 	for (i = 0; i < dest.components.length; i++) {
-		js = tpl;
 
-		if (dest) {
-			js = js.replace('%1.*', util.format("%s[%s]", dest.name, dest.start + dest.components[i]));
-		}
+		js = this.replaceOperand(tpl, '%1', dest, i);
 
 		for (j = 0; j < 3; j++) {
 			
-			if (!src[j]) {
-				continue;	
+			if (src[j]) {
+				js = this.replaceOperand(js, '%' + (j + 2), src[j], i);
 			}
 
-			if (src[j].components) {
-				js = js.replace('%' + (j + 2) + '.*', util.format("%s[%s]", src[j].name, src[j].start + src[j].components[i]));
-			} else {
-				js = js.replace('%' + (j + 2) + '.*', src[j].name);
-			}
 		}
 
 		this.current.push("    " + js);
@@ -278,6 +270,23 @@ proto.instruction = function(ins) {
 		}
 	}
 };
+
+proto.replaceOperand = function(tpl, from, op, n) {
+	var out, i, swz = ['x', 'y', 'z', 'w'];
+	
+	if (op.components) {
+		out = tpl.replace(from + '.*', util.format("%s[%s]", op.name, op.start + op.components[n]));
+	} else {
+		out = tpl.replace(from + '.*', op.name);	
+	}
+	
+	for (i = 0; i < swz.length; i++) {
+		out = out.replace(new RegExp(from + '\.' + swz[i], 'g'), util.format("%s[%s]", op.name, op.start + i));
+	}
+
+	return out;
+};
+
 
 /**
  * Prepares info on IR operand
