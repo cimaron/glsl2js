@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2011 Cimaron Shanahan
+Copyright (c) 2014 Cimaron Shanahan
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
@@ -25,9 +25,17 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 function GlslProgramJavascript() {
 
-	this.symbols = {};
 	this.vertex_code = [];
 	this.fragment_code = [];
+
+	this.symbols = new GlslProgramJavascriptVars();
+	this.context = new GlslProgramJavascriptContext();
+
+	this.library = {
+		tex : function() {
+			return [0, 0, 0, 0];	
+		}
+	};
 
 	this.vertex = null;
 	this.shader = null;
@@ -68,16 +76,18 @@ GlslProgramJavascript.translation_table = {
  *
  * @return  bool      true if there were no errors
  */
-proto.translate = function(irs, target) {
+proto.addObjectCode = function(object, target) {
 	var i, errors;
 
 	//optimize(irs, symbols);
 
+	this.mergeSymbols(object);
+
 	this.current = [];
 
-	for (i = 0; i < irs.code.length; i++) {
+	for (i = 0; i < object.code.length; i++) {
 		try {
-			this.instruction(irs.code[i]);
+			this.instruction(object.code[i]);
 		} catch (e) {
 			this.error = e;
 			return false;
@@ -94,22 +104,51 @@ proto.translate = function(irs, target) {
 };
 
 /**
+ * Merge symbol code into program table
+ */
+proto.mergeSymbols = function(object) {
+	var s, t, n, entry, start, size;
+	
+	for (s in object.symbols) {
+		
+		t = object.symbols[s].entries;	
+
+		for (n in t) {
+		
+			entry = t[n];
+			start = parseInt(entry.out.split('@')[1]);
+			size = types[entry.type].size;
+			
+			if (s == 'uniform') {
+				this.symbols.addUniform(entry.name, start, size);
+			} else if (s == 'attribute') {					
+				this.symbols.addAttribute(entry.name, start, size);
+			} else if (s == 'varying') {
+				this.symbols.addVarying(entry.name, start, size);				
+			}
+
+		}
+	}	
+};
+
+/**
  * Build a program
  *
  * @return  function
  */
-proto.build = function(stdlib, foreign, heap) {
+proto.build = function() {
 
 	var module, shaders;
 
 	module = new Function("stdlib", "foreign", "heap",
 		"\"use asm\";\n" +
-		"var temp = new stdlib.Float32Array(heap, 0, 128),\n" +
-		"jstemp = new stdlib.Float32Array(heap, 124, 4),\n" +
-		"vertex = new stdlib.Float32Array(heap, 128, 128),\n" +
-		"fragment = new stdlib.Float32Array(heap, 256, 128),\n" +
-		"result = new stdlib.Float32Array(heap, 384, 128)\n" +
-		"uniform = new stdlib.Float32Array(heap, 512, 128)\n" +
+		"var\n" +
+		"uniform_f32 = new stdlib.Float32Array(heap, 0, 128),\n" +
+		"attribute_f32 = new stdlib.Float32Array(heap, 128, 128),\n" +
+		"varying_f32 = new stdlib.Float32Array(heap, 256, 128),\n" +
+		"result_f32 = new stdlib.Float32Array(heap, 384, 128),\n" +
+		"temp_f32 = new stdlib.Float32Array(heap, 512, 128),\n" +
+		"jstemp = new stdlib.Float32Array(heap, 636, 4),\n" +
 		"tex = foreign.tex;\n" +
 		";\n" +
 		"function vs() {\n" +
@@ -121,10 +160,10 @@ proto.build = function(stdlib, foreign, heap) {
 		"return { fragment : fs, vertex : vs };"
 	);
 
-	shaders = module(stdlib, foreign, heap);
+	shaders = module(window, this.library, this.context.heap);
 
 	this.vertex = shaders.vertex;
-	this.fragment = shaders.fragment;
+	this.fragment = shaders.fragment;	
 };
 
 /**
@@ -262,7 +301,7 @@ proto.buildComponents = function(opr, dest) {
 		return out;
 	}
 	
-	out.name = opr.name;
+	out.name = opr.name + '_f32';
 	out.start = 4 * opr.address;
 	out.components = [];
 
@@ -286,15 +325,134 @@ proto.buildComponents = function(opr, dest) {
 };
 
 /**
- * Make a new program data context
+ * Get Uniform Location
+ *
+ * @param   string   name   Name
+ *
+ * @return  int
  */
-proto.makeContext = function() {
-	var ctx;
-	ctx = new GlslProgramJavascriptContext();
-	return ctx;
+proto.getUniformLocation = function(name) {
+
+	if (this.symbols.uniform[name]) {
+		return this.symbols.uniform[name].start;	
+	}
+
+	return false;
 };
 
-glsl.translator = GlslProgramJavascript;
+/**
+ * Get Uniform Size
+ *
+ * @param   string   name   Name
+ *
+ * @return  int
+ */
+proto.getUniformSize = function(name) {
+
+	if (this.symbols.uniform[name]) {
+		return this.symbols.uniform[name].size;	
+	}
+	
+	return false;
+};
+
+/**
+ * Set Uniform data
+ * 
+ * @param   string   name   Name
+ * @param   array    data   Data
+ */
+proto.setUniformData = function(name, data) {
+	var i, l, s, d;
+	
+	d = data.length;
+	l = this.getUniformSize(name);
+	s = this.getUniformLocation(name);
+	
+	if (l === false) {
+		return;	
+	}
+	
+	this.context.uniform_f32.set(data, i + s);
+};
+
+/**
+ * Get Attribute Location
+ *
+ * @param   string   name   Name
+ *
+ * @return  int
+ */
+proto.getAttributeLocation = function(name) {
+
+	if (this.symbols.attribute[name]) {
+		return this.symbols.attribute[name].start;	
+	}
+	
+	return false;
+};
+
+/**
+ * Get Attribute Size
+ *
+ * @param   string   name   Name
+ *
+ * @return  int
+ */
+proto.getAttributeSize = function(name) {
+
+	if (this.symbols.attribute[name]) {
+		return this.symbols.attribute[name].size;	
+	}
+	
+	return false;
+};
+
+/**
+ * Set Attribute data
+ * 
+ * @param   string   name   Name
+ * @param   array    data   Data
+ */
+proto.setAttributeData = function(name, data) {
+	var i, l, s, d;
+	
+	d = data.length;
+	l = this.getAttributeSize(name);
+	s = this.getAttributeLocation(name);
+	
+	if (l === false) {
+		return;	
+	}
+	
+	this.context.attribute_f32.set(data, i + s);
+};
+
+/**
+ * Get result data
+ *
+ * @param   int   start   Start pos
+ * @param   int   size    Size
+ *
+ * @return  array
+ */
+proto.getResultData = function(start, size) {
+	var res;
+	res = Array.prototype.slice.apply(this.context.result_f32, [start, size]);
+	return res;
+};
+
+/**
+ * Set TEX lookup function
+ *
+ * 
+ */
+proto.setTexFunction = function(func) {
+	this.extern.tex = func;
+};
+
+
+glsl.program = GlslProgramJavascript;
 
 
 

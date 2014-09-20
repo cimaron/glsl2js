@@ -61,7 +61,8 @@ gulp.task('generator', function() {
 		'ir/operand.js',
 		'ir/instruction.js',
 		'output/javascript/program.js',
-		'output/javascript/context.js'
+		'output/javascript/context.js',
+		'output/javascript/variables.js'
 		])
 		.pipe(concat('ir.js'))
 		.pipe(gulp.dest('build'))

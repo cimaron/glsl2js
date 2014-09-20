@@ -21,20 +21,46 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 /**
- * GlslProgramJavascriptContext class
+ * GlslProgramJavascriptVars Class
  */
-function GlslProgramJavascriptContext() {
-
-	this.heap = new ArrayBuffer(512 * 4);
-
-	this.uniform_f32 = new Float32Array(this.heap, 0, 128);
-	this.attribute_f32 = new Float32Array(this.heap, 128, 128);
-	this.result_f32 = new Float32Array(this.heap, 256, 128);
-
-	//Alias
-	this.varying_f32 = this.attribute_f32;
+function GlslProgramJavascriptVars() {
+	this.uniform = {};
+	this.attribute = {};
+	this.varying = {};
 }
 
-var proto = GlslProgramJavascriptContext.prototype;
+var proto = GlslProgramJavascriptVars.prototype;
 
+
+/**
+ * Add uniform variable
+ */
+proto.addUniform = function(name, pos, size) {
+	this.uniform[name] = new GlslProgramJavascriptVar(name, pos, size);
+};
+
+/**
+ * Add attribute variable
+ */
+proto.addAttribute = function(name, pos, size) {
+	this.attribute[name] = new GlslProgramJavascriptVar(name, pos, size);
+};
+
+/**
+ * Add varying variable
+ */
+proto.addVarying = function(name, pos, size) {
+	this.varying[name] = new GlslProgramJavascriptVar(name, pos, size);
+};
+
+
+
+/**
+ * GlslProgramJavascriptVar Class
+ */
+function GlslProgramJavascriptVar(name, pos, size) {
+	this.name = name;
+	this.pos = pos;
+	this.size = size;
+}
 
