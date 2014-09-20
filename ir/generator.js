@@ -117,19 +117,14 @@ AstDeclaratorList.prototype.ir = function(state, irs) {
 		entry.type = type.specifier.type_name;
 		entry.qualifier = qualifier;
 
-		switch (entry.qualifier) {
-
-			case AstTypeQualifier.flags.uniform:
-				entry.out = irs.getUniform(entry);
-				break;
-
-			case AstTypeQualifier.flags.attribute:
-				entry.out = irs.getAttribute(entry);
-				break;
-
-			default:
-				entry.out = irs.getTemp();
-
+		if (entry.qualifier & AstTypeQualifier.flags.uniform) {
+			entry.out = irs.getUniform(entry);
+		} else if (entry.qualifier & AstTypeQualifier.flags.attribute) {
+			entry.out = irs.getAttribute(entry);
+		} else if (entry.qualifier & AstTypeQualifier.flags.varying) {
+			entry.out = irs.getVarying(entry);
+		} else {
+			entry.out = irs.getTemp();			
 		}
 
 		constant = (qualifier & AstTypeQualifier.flags.constant);
