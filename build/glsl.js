@@ -273,15 +273,15 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Preprocessor.modules.comments = {
 
 	error : null,
-	
+
 	process : function(src) {
 		var i,
 		    chr,
-			la,
-			out = "",
-			line = 1,
+		    la,
+		    out = "",
+		    line = 1,
 		    in_single = 0,
-			in_multi = 0
+		    in_multi = 0
 			;
 		
 		for (i = 0; i < src.length; i++) {
@@ -4367,13 +4367,13 @@ proto.build = function() {
 	module = new Function("stdlib", "foreign", "heap",
 		"\"use asm\";\n" +
 		"var\n" +
-		"uniform_f32 = new stdlib.Float32Array(heap, 0, 128),\n" +
+		"uniform_f32   = new stdlib.Float32Array(heap,   0, 128),\n" +
 		"attribute_f32 = new stdlib.Float32Array(heap, 128, 128),\n" +
-		"varying_f32 = new stdlib.Float32Array(heap, 256, 128),\n" +
-		"result_f32 = new stdlib.Float32Array(heap, 384, 128),\n" +
-		"temp_f32 = new stdlib.Float32Array(heap, 512, 128),\n" +
-		"jstemp = new stdlib.Float32Array(heap, 636, 4),\n" +
-		"tex = foreign.tex;\n" +
+		"varying_f32   = new stdlib.Float32Array(heap, 256, 128),\n" +
+		"result_f32    = new stdlib.Float32Array(heap, 384, 128),\n" +
+		"temp_f32      = new stdlib.Float32Array(heap, 512, 128),\n" +
+		"jstemp        = new stdlib.Float32Array(heap, 636,   4),\n" +
+		"tex           = foreign.tex;\n" +
 		";\n" +
 		"function vs() {\n" +
 			this.vertex_code.join("\n") + "\n" +
@@ -4412,7 +4412,7 @@ proto.instruction = function(ins) {
 	//variables
 	dest = this.buildComponents(ins.d, true);
 	if (!dest) {
-		this.current.push("    " + tpl);
+		this.current.push(tpl);
 		return;
 	}
 
@@ -4420,6 +4420,8 @@ proto.instruction = function(ins) {
 	src.push(this.buildComponents(ins.s1));
 	src.push(this.buildComponents(ins.s2));
 	src.push(this.buildComponents(ins.s3));
+
+	this.generateTemp(dest, src, tpl);
 
 	for (i = 0; i < dest.components.length; i++) {
 
@@ -4433,79 +4435,40 @@ proto.instruction = function(ins) {
 
 		}
 
-		this.current.push("    " + js);
+		this.current.push(js);
 	}
 
 	this.current.push("");
-
-	return;
-
-
-	//fix atomic => non-atomic operations causing incorrect result
-	temps = [];
-	checkNeedTemp(dest, src1, temps);
-	checkNeedTemp(dest, src2, temps);
-	checkNeedTemp(dest, src3, temps);
-	
-	for (j = 0; j < code.length; j++) {	
-
-		//if vector operation, we need to loop over each vector and grab the appropriate element
-		for (i = 0; i < dest.count; i++) {
-			
-			trans = code[j];
-			c = dest.comp[i];
-
-			d = dest.out + c;
-			s1 = buildVariable(src1, i, c);
-			s2 = buildVariable(src2, i, c);
-			s3 = buildVariable(src3, i, c);
-
-			if (src1 && src1.comp[i].indexOf('jstemp') != -1) {
-				s1 = src1.comp[i];
-			}
-			if (src2 && src2.comp[i].indexOf('jstemp') != -1) {
-				s2 = src2.comp[i];
-			}
-			if (src3 && src3.comp[i].indexOf('jstemp') != -1) {
-				s3 = src3.comp[i];
-			}
-
-			//vector with component
-			trans = trans.replace(/%1\*/g, d);
-			trans = trans.replace(/%2\*/g, s1);
-			trans = trans.replace(/%3\*/g, s2);
-			trans = trans.replace(/%4\*/g, s3);
-
-			//vector without component
-			trans = trans.replace(/%1/g, dest.out);
-			trans = trans.replace(/%2/g, src1.out);
-			trans = trans.replace(/%3/g, src2.out);
-			trans = trans.replace(/%4/g, src3.out);
-
-			//index of current component
-			trans = trans.replace('%i', i);
-
-			body.push(util.format("%s;", trans));
-
-			if (!code[j].match(/%[0-9]+\*/)) {
-				//break 1
-				i = dest.count;
-			}
-		}
-	}
 };
 
+
+/**
+ * Replace an operand into code template
+ *
+ * @param   string   tpl    Template
+ * @param   string   from   Template operand
+ * @param   object   op     Operand info
+ * @param   int      n      Current component iteration  
+ */
 proto.replaceOperand = function(tpl, from, op, n) {
-	var out, i, swz = ['x', 'y', 'z', 'w'];
-	
+	var i,
+	    out,
+		name,
+		addr,
+		swz = ['x', 'y', 'z', 'w']
+		;
+
+	name = op.jstemp[n] ? 'jstemp' : op.name;
+	addr = op.jstemp[n] ? n : op.start + op.components[n];
+
 	if (op.components) {
-		out = tpl.replace(from + '.*', util.format("%s[%s]", op.name, op.start + op.components[n]));
+		out = tpl.replace(from + '.*', util.format("%s[%s]", name, addr));
 	} else {
-		out = tpl.replace(from + '.*', op.name);	
+		out = tpl.replace(from + '.*', name);
 	}
-	
+
 	for (i = 0; i < swz.length; i++) {
-		out = out.replace(new RegExp(from + '\.' + swz[i], 'g'), util.format("%s[%s]", op.name, op.start + i));
+		out = out.replace(new RegExp(from + '\.' + swz[i], 'g'), util.format("%s[%s]", name, op.start + i));
 	}
 
 	return out;
@@ -4537,6 +4500,7 @@ proto.buildComponents = function(opr, dest) {
 	out.name = opr.name + '_f32';
 	out.start = 4 * opr.address;
 	out.components = [];
+	out.jstemp = [];
 
 	//generate array representation of swizzle components, expanding if necessary
 	swz = opr.swizzle || "xyzw";
@@ -4548,13 +4512,38 @@ proto.buildComponents = function(opr, dest) {
 			if (!dest) {
 				//repeat last one
 				out.components.push(out.components[i - 1]);	
+				out.jstemp.push(null);
 			}
 		} else {
 			out.components.push("xyzw".indexOf(swz[i]));
+			out.jstemp.push(null);
 		}
 	}
 
 	return out;
+};
+
+proto.generateTemp = function(dest, src, tpl) {
+	var i,
+	    c,
+		op,
+	    written
+		;
+	
+	for (i = 0; i < dest.components.length; i++) {
+		written = dest.components.slice(0, i);
+
+		for (c = 0; c < src.length; c++) {
+			op = src[c];
+			if (op && op.name == dest.name && op.start == dest.start && written.indexOf(op.components[i]) != -1) {
+				op.jstemp[i] = true;
+				this.current.push(util.format("jstemp[%s] = %s[%s]", i, op.name, op.start + op.components[i]));
+			}
+		}
+	}
+	
+	//console.log(tpl, dest, src);
+	//debugger;
 };
 
 /**
