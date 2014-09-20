@@ -42,6 +42,8 @@ gulp.task('jison', function() {
 
 gulp.task('parser', ['jison'], function() {
 	return gulp.src([
+		'preprocessor/preprocessor.js',
+		'preprocessor/comments.js',
 		'parser/type.js',
 		'parser/symbol.js',
 		'parser/ast.js',

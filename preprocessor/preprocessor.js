@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2011 Cimaron Shanahan
+Copyright (c) 2014 Cimaron Shanahan
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
@@ -19,50 +19,39 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-var glsl = {
-	
-	state : null,
-	
-	error : [],
+/**
+ * Preprocessor Class
+ */
+function Preprocessor() {
+	this.error = [];
+}
 
-	compile : function(source, options) {
-		var processed,
-		    state,
-		    irs
-		    ;
+Preprocessor.modules = {};
 
-		//Preprocess
-		processed = this.preprocessor.process(source);
-		if (!processed) {
-			this.error = this.preprocessor.error;
+var proto = Preprocessor.prototype;
+
+proto.process = function(src) {
+	var m;
+
+	this.error = null;
+
+	for (m in Preprocessor.modules) {
+		
+		try {
+			result = Preprocessor.modules[m].process(src);
+		} catch (e) {
+			this.error.push(util.format("compiler error: %s at line %s, column %s", e.message, e.lineNumber, e.columnNumber));
 			return false;
 		}
 
-		state = this.parse(processed, options);
-		if (state.error) {
-			this.error = state.info_log;
+		if (!result) {
+			this.error.push(Preprocessor.modules[m].error);
 			return false;
 		}
-
-		this.state = state;
-		irs = this.generate(this.state);
-		if (!irs) {
-			this.error = this.state.info_log;	
-		}
-
-		return irs;
-	},
-
-	getLastError : function() {
-		return this.error;
-	},
-
-	/**
-	 * Compilation targets
-	 */
-	target : {
-		fragment : 0,
-		vertex : 1
 	}
+
+	return result;
 };
+
+glsl.preprocessor = new Preprocessor();
 
