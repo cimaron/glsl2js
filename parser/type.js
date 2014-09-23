@@ -47,3 +47,6 @@ var types = {
 	samplerCube : new Type("samplerCube", 1, 1)
 };
 
+//Compatibility
+types['void'] = types._void;
+

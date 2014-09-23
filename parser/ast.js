@@ -49,6 +49,11 @@ proto.setLocation = function(loc) {
 	this.location.last_column = loc.last_column;
 };
 
+/**
+ * Return string representation of node
+ *
+ * @return  string
+ */
 proto.toString = function() {
 	return this.constructor.name;
 };
@@ -133,8 +138,8 @@ function AstTypeSpecifier(specifier) {
 	}
 }
 
-proto = AstTypeSpecifier.prototype;
 util.inherits(AstTypeSpecifier, AstNode);
+proto = AstTypeSpecifier.prototype;
 
 //overloaded constructors
 AstTypeSpecifier.number = function(specifier) {
@@ -162,15 +167,28 @@ AstTypeSpecifier.object = function(s) {
 };
 
 /**
- * toString
+ * Return string representation of node
  *
  * @return  string
  */
 proto.toString = function() {
-	return util.format("%s %s",
-					this.type_specifier === types.struct ? this.structure : this.type_name,
-					this.is_array ? util.format("[ %s] ", this.array_size || "") : ""
-					);
+	var i, prec;
+	
+	if (this.is_precision_statement) {
+		
+		for (i in ast_precision) {
+			if (ast_precision.hasOwnProperty(i) && ast_precision[i] === this.precision) {
+				prec = i;
+				break;
+			}
+		}
+		
+		return util.format("precision %s %s;", prec, this.type_name);
+	}
+	
+	return (this.type_specifier === types.struct ? this.structure : this.type_name)
+	    + (this.is_array ? util.format("[%s]", this.array_size || "") : "")
+		;
 };
 
 
@@ -187,20 +205,20 @@ function AstFunction() {
 	this.signature = null;	
 }
 
-proto = AstFunction.prototype;
 util.inherits(AstFunction, AstNode);
+proto = AstFunction.prototype;
 
 /**
- * toString
+ * Return string representation of node
  *
  * @return  string
  */
-AstFunction.toString = function() {
+proto.toString = function() {
 	return util.format("%s %s(%s)", this.return_type, this.identifier, this.parameters);			
 };
 
 /**
- * Representation of any sort of expression.
+ * AST Expression Class
  */
 function AstExpression(oper, ex0, ex1, ex2) {
 	AstNode.apply(this);
@@ -223,8 +241,6 @@ function AstExpression(oper, ex0, ex1, ex2) {
 util.inherits(AstExpression, AstNode);
 proto = AstExpression.prototype;
 
-//public:
-
 /**
  * Makes number a float representation
  *
@@ -237,10 +253,35 @@ proto.makeFloat = function(n) {
 	return n;
 };
 
-
+/**
+ * Return string representation of node
+ *
+ * @return  string
+ */
 proto.toString = function() {
+
 	switch (this.oper) {
 		case '=':
+		case '+':
+		case '-':
+		case '*':
+		case '/':
+		case '%':
+		case "<<":
+		case ">>":
+		case "<":
+		case ">":
+		case "<=":
+		case ">=":
+		case "==":
+		case "!=":
+		case "&":
+		case "^":
+		case "|":
+		case "~":
+		case "&&":
+		case "^^":
+		case "||":
 		case '*=':
 		case '/=':
 		case '%=':
@@ -254,58 +295,48 @@ proto.toString = function() {
 			return util.format("(%s %s %s)", this.subexpressions[0], this.oper, this.subexpressions[1]);
 
 		case '.':
-			return util.format("(%s. %s)", this.subexpressions[0], this.primary_expression.identifier);
+			return util.format("(%s.%s)", this.subexpressions[0], this.primary_expression.identifier);
 
-		case '+':
-		case '-':
-		case '~':
-		case '++_':
-		case '--_':
-			return util.format("(%s %s)", this.oper, this.subexpressions[0]);
+		case 'POS':
+		case 'NEG':
+		case '!':
+		case '++x':
+		case '--x':
+			return util.format("(%s%s)", this.oper, this.subexpressions[0]);
 		
-		case '_++':
-		case '_--':
-			return util.format("(%s %s)", this.subexpressions[0], this.oper);
+		case 'x++':
+		case 'x--':
+			return util.format("(%s%s)", this.subexpressions[0], this.oper);
 
 		case '?:':
 			return util.format("(%s ? %s : %s)", this.subexpressions[0], this.subexpressions[1], this.subexpressions[2]);				
 
 		case '[]':
-			return util.format("(%s [ %s ])", this.subexpressions[0], this.subexpressions[1]);				
+			return util.format("(%s[%s])", this.subexpressions[0], this.subexpressions[1]);				
 
 		case '()':
-			return util.format("(%s ( %s ))", this.subexpressions[0], this.expressions.join(", "));
+			return util.format("(%s(%s))", this.subexpressions[0], this.expressions.join(", "));
 
 		case 'ident':
 			return util.format("%s", this.primary_expression.identifier);
 		
-		case 'int':
-			return util.format("%s", this.primary_expression.int_constant);
-		
 		case 'float':
 			return util.format("%s", this.primary_expression.float_constant);
 		
+		case 'int':
+			return util.format("%s", this.primary_expression.int_constant);
+		
 		case 'bool':
 			return util.format("%s", this.primary_expression.bool_constant ? 'true' : 'false');
-
-		case ',':
-			return util.format("(%s)", this.expressions.join(", "));
 	}
 };
 
-
-var AstTypeQualifier = function() {
-	//large union
-	this.flags = {};
-	this.location = null;
-};
-
-AstTypeQualifier.flags = {
+AstTypeQualifier = {
 	invariant : 1,
 	constant : 2,
 	attribute : 4,
 	varying : 8,
-	'in' : 16,
+	_in : 16,
 	out : 32,
 	centroid : 64,
 	uniform : 128,
@@ -328,23 +359,28 @@ function AstFullySpecifiedType() {
 	this.specifier = null;
 }
 
-proto = AstFullySpecifiedType.prototype;
 util.inherits(AstFullySpecifiedType, AstNode);
+proto = AstFullySpecifiedType.prototype;
 
 /**
- * 
- */
-proto.has_qualifiers = function() {
-	return this.qualifier.flags.i !== 0;
-};
-
-/**
- * toString
+ * Return string representation of node
  *
  * @return  string
  */
 proto.toString = function() {
-	return util.format("... %s", this.specifier);
+	var q, qual = "";
+
+	if (this.qualifier && this.qualifier.flags !== 0) {
+		for (q in AstTypeQualifier) {
+			if (AstTypeQualifier.hasOwnProperty(q)) {
+				if (this.qualifier.flags & AstTypeQualifier[q]) {
+					qual += q + " ";
+				}
+			}
+		}
+	}
+
+	return qual + this.specifier;
 };
 
 
@@ -360,16 +396,18 @@ function AstDeclaration(identifier, is_array, array_size, initializer) {
 	this.initializer = initializer;
 }
 
-proto = AstDeclaration.prototype;
 util.inherits(AstDeclaration, AstNode);
+proto = AstDeclaration.prototype;
 
 /**
- * toString
+ * Return string representation of node
  *
  * @return  string
  */
 proto.toString = function() {
-	return util.format("%s %s %s", this.identifier, "...", this.initializer ? util.format("= %s", this.initializer) : "");
+	return this.identifier
+	    + (this.initializer ? util.format(" = %s", this.initializer) : "")
+		;
 };
 
 
@@ -384,11 +422,11 @@ function AstDeclaratorList(type) {
 	this.invariant = 0;
 }
 
-proto = AstDeclaratorList.prototype;
 util.inherits(AstDeclaratorList, AstNode);
+proto = AstDeclaratorList.prototype;
 
 /**
- * toString
+ * Return string representation of node
  *
  * @return  string
  */
@@ -410,16 +448,19 @@ function AstParameterDeclarator() {
 	this.is_void = null;
 }
 
-proto = AstParameterDeclarator.prototype;
 util.inherits(AstParameterDeclarator, AstNode);
+proto = AstParameterDeclarator.prototype;
 
 /**
- * toString
+ * Return string representation of node
  *
  * @return  string
  */
 proto.toString = function() {
-	return util.format("%s%s %s", this.type, this.identifier || "", this.is_array ? util.format("[%s]", this.array_size) : "");
+	return this.type
+	    + (this.identifier ? " " + this.identifier : "")
+		+ (this.is_array ? util.format("[%s]", this.array_size) : "")
+		;
 };
 
 
@@ -432,16 +473,16 @@ function AstExpressionStatement(ex) {
 	this.expression = ex;
 }
 
-proto = AstExpressionStatement.prototype;
 util.inherits(AstExpressionStatement, AstNode);
+proto = AstExpressionStatement.prototype;
 
 /**
- * toString
+ * Return string representation of node
  *
  * @return  string
  */
 proto.toString = function() {
-	return util.format("%s;\n ", this.expression || "");
+	return util.format("%s;\n", this.expression || "");
 };
 
 
@@ -457,19 +498,38 @@ function AstCompoundStatement(new_scope, statements) {
 		this.statements = [];
 	}
 }
- 
-proto = AstCompoundStatement.prototype;
+
 util.inherits(AstCompoundStatement, AstNode);
+proto = AstCompoundStatement.prototype;
 
 /**
- * toString
+ * Return string representation of node
  *
  * @return  string
  */
 proto.toString = function() {
-	return util.format("{\n%s}\n", this.statements.join(""));
+	var str,
+		stmts,
+	    indent
+		;
+
+	AstCompoundStatement._depth++;
+	indent = new Array(AstCompoundStatement._depth).join("  ")
+
+	stmts = indent + "  " + this.statements.join(indent + "  ");
+
+	str = "\n" + indent + "{\n"
+	    + stmts
+		+ indent + "}\n"
+		;
+
+	AstCompoundStatement._depth--;
+
+	return str;
 };
 
+//Used for toString indentation
+AstCompoundStatement._depth = 0;
 
 /**
  * AST Function Definition Class
@@ -481,16 +541,16 @@ function AstFunctionDefinition() {
 	this.body = null;
 }
 
-proto = AstFunctionDefinition.prototype;
 util.inherits(AstFunctionDefinition, AstNode);
+proto = AstFunctionDefinition.prototype;
 
 /**
- * toString
+ * Return string representation of node
  *
  * @return  string
  */
 proto.toString = function() {
-	return util.format("%s%s", this.proto_type, this.body);
+	return util.format("%s %s", this.proto_type, this.body);
 };
 
 /**
@@ -500,11 +560,11 @@ function AstExpressionBin(oper, ex0, ex1) {
 	AstExpression.apply(this, [oper, ex0, ex1]);
 }
 
-proto = AstExpressionBin.prototype;
 util.inherits(AstExpressionBin, AstExpression);
+proto = AstExpressionBin.prototype;
 
 /**
- * toString
+ * Return string representation of node
  *
  * @return  string
  */
@@ -530,8 +590,8 @@ function AstFunctionExpression(arg) {
 
 }
 
-proto = AstFunctionExpression.prototype;
 util.inherits(AstFunctionExpression, AstExpression);
+proto = AstFunctionExpression.prototype;
 
 proto.is_constructor = function() {
 	return this.cons;
@@ -548,16 +608,16 @@ function AstSelectionStatement(condition, then_statement, else_statement) {
 	this.else_statement = else_statement;
 }
 
-proto = AstSelectionStatement.prototype;
 util.inherits(AstSelectionStatement, AstNode);
+proto = AstSelectionStatement.prototype;
 
 /**
- * toString
+ * Return string representation of node
  *
  * @return  string
  */
 proto.toString = function() {
-	return util.format("if ( %s) %s %s", this.condition, this.then_statement, this.else_statement ? util.format("else %s", this.else_statement) : "");
+	return util.format("if (%s) %s %s", this.condition, this.then_statement, this.else_statement ? util.format("else %s", this.else_statement) : "");
 };
 
 
@@ -570,7 +630,7 @@ function AstStructSpecifier(identifier, declarator_list) {
 	this.declarations = [];
 
 	if (identifier === null) {
-		identifier = glsl.util.format("#anon_struct%d", AstStructSpecifier.anon_count);
+		identifier = util.format("#anon_struct%d", AstStructSpecifier.anon_count);
 		AstStructSpecifier.anon_count++;
 	}
 	this.name = identifier;
@@ -579,7 +639,7 @@ function AstStructSpecifier(identifier, declarator_list) {
 
 AstStructSpecifier.anon_count = 1;
 
-proto = AstStructSpecifier.prototype;
 util.inherits(AstStructSpecifier, AstNode);
+proto = AstStructSpecifier.prototype;
 
 

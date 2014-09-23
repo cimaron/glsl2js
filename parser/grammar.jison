@@ -899,39 +899,39 @@ storage_qualifier:
 		  'CONST'
 		| 'ATTRIBUTE' /* Vertex only. */ {
 				/*jslint bitwise: true */
-				$$ = new AstTypeQualifier();
-				$$.flags |= AstTypeQualifier.flags.attribute;
+				$$ = {};
+				$$.flags |= AstTypeQualifier.attribute;
 			}
 		| 'VARYING' {
-				$$ = new AstTypeQualifier();
-				$$.flags |= AstTypeQualifier.flags.varying;
+				$$ = {};
+				$$.flags |= AstTypeQualifier.varying;
 			}
 		| 'CENTROID' 'VARYING' {
-				$$ = new AstTypeQualifier();
-				$$.flags |= AstTypeQualifier.flags.centroid;
-				$$.flags |= AstTypeQualifier.flags.varying;
+				$$ = {};
+				$$.flags |= AstTypeQualifier.centroid;
+				$$.flags |= AstTypeQualifier.varying;
 			}
 		| 'IN' {
-				$$ = new AstTypeQualifier();
-				$$.flags |= AstTypeQualifier.flags['in'];
+				$$ = {};
+				$$.flags |= AstTypeQualifier._in;
 			}
 		| 'OUT' {
-				$$ = new AstTypeQualifier();
-				$$.flags |= AstTypeQualifier.flags.out;
+				$$ = {};
+				$$.flags |= AstTypeQualifier.out;
 			}
 		| 'CENTROID' 'IN' {
-				$$ = new AstTypeQualifier();
-				$$.flags |= AstTypeQualifier.flags.centroid;
-				$$.flags |= AstTypeQualifier.flags['in'];
+				$$ = {};
+				$$.flags |= AstTypeQualifier.centroid;
+				$$.flags |= AstTypeQualifier._in;
 			}
 		| 'CENTROID' 'OUT' {
-				$$ = new AstTypeQualifier();
-				$$.flags |= AstTypeQualifier.flags.centroid;
-				$$.flags |= AstTypeQualifier.flags.out;
+				$$ = {};
+				$$.flags |= AstTypeQualifier.centroid;
+				$$.flags |= AstTypeQualifier.out;
 			}
 		| 'UNIFORM' {
-				$$ = new AstTypeQualifier();
-				$$.flags |= AstTypeQualifier.flags.uniform;
+				$$ = {};
+				$$.flags |= AstTypeQualifier.uniform;
 			}
 		;
 
@@ -1148,7 +1148,7 @@ selection_statement:
 
 /* Line: 1591 */
 selection_rest_statement:
-		  statement 'ELSE' statement { debugger;
+		  statement 'ELSE' statement {
 		  		$$ = {};
 				$$.then_statement = $1;
 				$$.else_statement = $3; }

@@ -117,17 +117,17 @@ AstDeclaratorList.prototype.ir = function(state, irs) {
 		entry.type = type.specifier.type_name;
 		entry.qualifier = qualifier;
 
-		if (entry.qualifier & AstTypeQualifier.flags.uniform) {
+		if (entry.qualifier & AstTypeQualifier.uniform) {
 			entry.out = irs.getUniform(entry);
-		} else if (entry.qualifier & AstTypeQualifier.flags.attribute) {
+		} else if (entry.qualifier & AstTypeQualifier.attribute) {
 			entry.out = irs.getAttribute(entry);
-		} else if (entry.qualifier & AstTypeQualifier.flags.varying) {
+		} else if (entry.qualifier & AstTypeQualifier.varying) {
 			entry.out = irs.getVarying(entry);
 		} else {
 			entry.out = irs.getTemp();			
 		}
 
-		constant = (qualifier & AstTypeQualifier.flags.constant);
+		constant = (qualifier & AstTypeQualifier.constant);
 
 		if (decl.initializer) {
 
