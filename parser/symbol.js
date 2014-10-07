@@ -31,7 +31,13 @@ function SymbolTableEntry(name, typedef) {
 	this.depth = null;
 	this.qualifier = null;
 	this.out = name;
-	this.constant = null;		
+	this.constant = null;
+
+	//Temp vars for IR generation
+	this.code = null;
+	this.Ast = null;
+	this.Dest = null;
+	this.Type = null;
 }
 
 SymbolTableEntry.typedef = {
@@ -217,11 +223,12 @@ proto.get_entry = function(name, typedef, def) {
 	t = this.table[name] || [];
 	for (i = 0; i < t.length; i++) {
 		entry = t[i];
-		if (entry.typedef === typedef && (typedef !== SymbolTableEntry.typedef.func || this._match_definition(def, entry.definition))) {
+		if (entry.typedef === typedef /*&& (typedef !== SymbolTableEntry.typedef.func || this._match_definition(def, entry.definition))*/) {
 			return entry;
 		}
 	}
 	
 	return null;
 };
+
 
