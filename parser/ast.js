@@ -597,6 +597,11 @@ proto.is_constructor = function() {
 	return this.cons;
 };
 
+proto.toString = function() {
+	return util.format("%s(%s)", this.subexpressions[0], this.expressions.join(", "));
+};
+
+
 
 /**
  * AST Selection Statement Class
@@ -641,5 +646,55 @@ AstStructSpecifier.anon_count = 1;
 
 util.inherits(AstStructSpecifier, AstNode);
 proto = AstStructSpecifier.prototype;
+
+
+
+/**
+ * AST Jump 
+ */
+function AstJumpStatement(mode, return_value) {
+	AstNode.apply(this);
+
+	this.opt_return_value = null;
+	this.mode = mode;
+
+	if (mode === ast_jump_modes._return) {
+		this.opt_return_value = return_value;	
+	}	
+}
+
+var ast_jump_modes = {
+	_continue : 0,
+	_break : 1,
+	_return : 2,
+	_discard : 3
+};
+
+util.inherits(AstJumpStatement, AstNode);
+proto = AstJumpStatement.prototype;
+
+/**
+ * Return string representation of node
+ *
+ * @return  string
+ */
+proto.toString = function() {
+	
+	switch (this.mode) {
+
+		case ast_jump_modes._continue:
+			return "continue;";
+		
+		case ast_jump_modes._break:
+			return "break;";
+		
+		case ast_jump_modes._return:
+			return util.format("return%s;", this.opt_return_value ? " " + this.opt_return_value : "");
+		
+		case ast_jump_modes._discard:
+			return "discard;";
+	}
+};
+
 
 
