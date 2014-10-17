@@ -1203,7 +1203,9 @@ jump_statement:
 			'CONTINUE' ';'
 		|	'BREAK' ';'
 		|	'RETURN' ';'
-		|	'RETURN' expression ';'
+		|	'RETURN' expression ';' {
+                $$ = new AstReturnStatement($2);
+				$$.setLocation(@1); }
 		|	'DISCARD' ';' /* Fragment shader only.*/
 		;
 

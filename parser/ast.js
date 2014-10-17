@@ -643,3 +643,23 @@ util.inherits(AstStructSpecifier, AstNode);
 proto = AstStructSpecifier.prototype;
 
 
+/**
+ * AST Return Statement Class
+ */
+function AstReturnStatement(expression) {
+	AstNode.apply(this);
+	this.primary_expression = expression;
+}
+
+util.inherits(AstReturnStatement, AstNode);
+proto = AstReturnStatement.prototype;
+
+/**
+ * Return string representation of node
+ *
+ * @return  string
+ */
+proto.toString = function() {
+	return util.format("return %s;", this.primary_expression);
+};
+
