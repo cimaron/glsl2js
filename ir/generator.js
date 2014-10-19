@@ -29,13 +29,18 @@ CONNECTION WITH THE SOFTWARE OR THE USE		 OR OTHER DEALINGS IN THE SOFTWARE.
  * @return  string
  */
 glsl.generate = function(state) {
+	var irs, main;
 
-	var irs = new Ir(state.options.target);
+	irs = new Ir(state.options.target);
 
 	try {
+
 		for (var i = 0; i < state.translation_unit.length; i++) {
 			state.translation_unit[i].ir(state, irs);
 		}
+
+		main = state.symbols.get_function('main', 'void', 'void');
+		main.Ast.ir(state, irs);
 
 	} catch (e) {
 		if (!e.ir) {
@@ -157,6 +162,7 @@ AstDeclaratorList.prototype.ir = function(state, irs) {
  * @param   object   irs     IR representation
  */
 AstFunctionDefinition.prototype.ir = function(state, irs) {
+	var symbol;
 
 	if (this.is_definition) {
 		//enter definition into symbol table?
@@ -166,10 +172,8 @@ AstFunctionDefinition.prototype.ir = function(state, irs) {
 	//handle function proto
 	this.proto_type.ir(state, irs);
 
-	//handle function body
-	this.body.ir(state, irs);
-
-	irs.push(new IrInstruction('RET'));
+	symbol = state.symbols.get_function(this.proto_type.identifier);
+	symbol.Ast = this.body;
 };
 
 
@@ -443,7 +447,7 @@ AstExpression.prototype.ir_simple = function(state, irs) {
 		//lookup identifier in symbol table
 		entry = state.symbols.get_variable(name) || state.symbols.get_function(name);
 
-		if (!entry || !entry.type) {
+		if (!entry /*|| !entry.type*/) {
 			ir_error(util.format("%s is undefined", name), this);
 		}
 
@@ -469,11 +473,11 @@ AstExpression.prototype.ir_simple = function(state, irs) {
 	//int constant
 	if ('int_constant' in this.primary_expression) {
 		this.Type = 'int';
-		this.Dest = this.makeFloat(e.primary_expression.int_constant);
+		this.Dest = this.makeFloat(this.primary_expression.int_constant);
 		return;
 	}
 
-	ir_error("Cannot translate unknown simple expression type", e);
+	ir_error("Cannot translate unknown simple expression type", this);
 };
 
 /**
@@ -580,7 +584,6 @@ AstFunctionExpression.prototype.ir = function(state, irs) {
 	if (entry.code) {
 		irs.build(entry.code, dest);
 	} else if (entry.Ast) {
-
 		ret_val = irs.getTemp();
 		
 		//@todo: find a better way to relay this information

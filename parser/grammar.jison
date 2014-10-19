@@ -1205,11 +1205,9 @@ jump_statement:
 		| 'RETURN' ';' {
 			$$ = new AstJumpStatement(ast_jump_modes._return);
 			$$.setLocation(@1); }
-		}
 		| 'RETURN' expression ';' {
 			$$ = new AstJumpStatement(ast_jump_modes._return, $2);
-			$$.setLocation(@1); }
-			
+			$$.setLocation(@1); }			
 		| 'DISCARD' ';' /* Fragment shader only.*/
 		;
 

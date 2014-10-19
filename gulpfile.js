@@ -89,6 +89,18 @@ gulp.task('errors', ['glsl'], function() {
 	;
 });
 
+gulp.task('watch', function() {
+    gulp.watch([
+        '*.js',
+        'library/*.js',
+        'ir/*.js',
+        'output/*.js',
+        'parser/*.js',
+        'parser/*.jison',
+        'preprocessor/*.js'
+    ], ['default']);
+});
+
 gulp.task('default', ['clean', 'glsl'], function() {
 
 	return gulp.src([
