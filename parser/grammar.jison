@@ -1200,11 +1200,17 @@ for_rest_statement:
 
 /* Line: 1682 */
 jump_statement:
-			'CONTINUE' ';'
-		|	'BREAK' ';'
-		|	'RETURN' ';'
-		|	'RETURN' expression ';'
-		|	'DISCARD' ';' /* Fragment shader only.*/
+		  'CONTINUE' ';'
+		| 'BREAK' ';'
+		| 'RETURN' ';' {
+			$$ = new AstJumpStatement(ast_jump_modes._return);
+			$$.setLocation(@1); }
+		}
+		| 'RETURN' expression ';' {
+			$$ = new AstJumpStatement(ast_jump_modes._return, $2);
+			$$.setLocation(@1); }
+			
+		| 'DISCARD' ';' /* Fragment shader only.*/
 		;
 
 /* Line: 1715 */
