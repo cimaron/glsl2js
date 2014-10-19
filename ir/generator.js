@@ -203,12 +203,13 @@ AstFunction.prototype.ir = function(state, irs) {
  * @param   object   irs     IR representation
  */
 AstCompoundStatement.prototype.ir = function(state, irs) {
-	var i;
+	var i, stmt;
 
 	state.symbols.push_scope();
 
 	for (i = 0; i < this.statements.length; i++) {
-		this.statements[i].ir(state, irs);
+		stmt = this.statements[i];
+		stmt.ir(state, irs);
 	}
 
 	state.symbols.pop_scope();
@@ -536,14 +537,16 @@ AstExpression.prototype.ir_generate = function(state, irs, len) {
  * @param   object   irs     IR representation
  */
 AstFunctionExpression.prototype.ir = function(state, irs) {
-	var i, func, se, def, dest, entry;
-
-	//Prepare the dest
-	this.subexpressions[0].ir(state, irs);
+	var entry, name, ret_val;
 
 	if (this.cons) {
 		return this.ir_constructor(state, irs);
 	}
+	/*
+	var i, func, se, def, dest;
+
+	//Prepare the dest
+	this.subexpressions[0].ir(state, irs);
 
 	func = this.subexpressions[0].Dest;
 	def = [];
@@ -557,20 +560,35 @@ AstFunctionExpression.prototype.ir = function(state, irs) {
 		def.push(se.Type);
 		dest.push(se.Dest);
 	}
+	*/
+	name = this.subexpressions[0].primary_expression.identifier;
 
-	entry = state.symbols.get_function(func, null, def);
+	//entry = state.symbols.get_function(name, null, def);
+	entry = state.symbols.get_function(name, null, null);
 	if (!entry) {
-		ir_error(util.format("Function %s(%s) is not defined", func, def_names.join(",")), this);
+		//ir_error(util.format("Function %s(%s) is not defined", func, def_names.join(",")), this);
+		ir_error(util.format("Function %s(%s) is not defined", name, null), this);
 	}
 
 	this.Type = entry.type;
 	this.Dest = irs.getTemp();
-	
-	irs.push(new IrComment(util.format("%s(%s) => %s %s", entry.name, dest.join(", "), this.Type, this.Dest), this.location));
 
-	dest.unshift(this.Dest);
+	irs.push(new IrComment(util.format("%s(%s) => %s %s", name, /*dest.join(", ")*/null, this.Type, this.Dest), this.location));
 
-	irs.build(entry.code, dest);
+	//dest.unshift(this.Dest);
+
+	if (entry.code) {
+		irs.build(entry.code, dest);
+	} else if (entry.Ast) {
+
+		ret_val = irs.getTemp();
+		
+		//@todo: find a better way to relay this information
+		state.function_ret_val = ret_val;
+		debugger;
+		entry.Ast.ir(state, irs);
+		this.Dest = entry.Ast.Dest;
+	}
 };
 
 
@@ -712,4 +730,43 @@ AstSelectionStatement.prototype.ir = function(state, irs) {
 	irs.push(new IrInstruction('ENDIF'));
 }
 
+/**
+ * Constructs a jump statement
+ *
+ * Note: jump semantics are a bit different in glsl as there is no true "jumping":
+ * functions are inlined, loops are unrolled, etc.
+ *
+ * @param   ast_node    Statement
+ */
+AstJumpStatement.prototype.ir = function(state, irs) {
+	var ret, assign, lhs;
 
+	ret = this.opt_return_value;
+
+	if (ret) {
+
+		if (!state.function_ret_val) {
+			throw new Error("Missing return value");
+		}
+
+		ret.ir(state, irs);
+
+		//@todo: need to compare return value type with current function type
+
+		irs.push(new IrComment(util.format("return %s => %s", ret.Dest, ret.Type), this.location));
+
+		//Piggy-back off assignment generation
+		lhs = new AstNode();
+		lhs.setLocation(this.getLocation());
+		lhs.Type = ret.Type;
+		lhs.Dest = state.function_ret_val;
+
+		assign = new AstExpression('=', lhs, ret);
+		assign.setLocation(this.getLocation());
+		assign.ir(state, irs);
+
+	} else {
+		irs.push(new IrComment("return", this.location));
+	}
+	
+};

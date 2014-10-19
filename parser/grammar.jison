@@ -745,7 +745,7 @@ function_header:
 				$$.setLocation(@1);
 				$$.return_type = $1;
 				$$.identifier = $2;
-				yy.state.symbols.add_function($2);
+				yy.state.symbols.add_function($2, $1.specifier.type_name);
 				yy.state.symbols.push_scope();
 			}
 		;
