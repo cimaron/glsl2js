@@ -39,7 +39,7 @@ glsl.generate = function(state) {
 			state.translation_unit[i].ir(state, irs);
 		}
 
-		main = state.symbols.get_function('main', 'void', 'void');
+		main = state.symbols.get_function('main', 'void');
 		main.Ast.ir(state, irs);
 
 	} catch (e) {
@@ -209,14 +209,10 @@ AstFunction.prototype.ir = function(state, irs) {
 AstCompoundStatement.prototype.ir = function(state, irs) {
 	var i, stmt;
 
-	state.symbols.push_scope();
-
 	for (i = 0; i < this.statements.length; i++) {
 		stmt = this.statements[i];
 		stmt.ir(state, irs);
 	}
-
-	state.symbols.pop_scope();
 };
 
 
@@ -541,37 +537,33 @@ AstExpression.prototype.ir_generate = function(state, irs, len) {
  * @param   object   irs     IR representation
  */
 AstFunctionExpression.prototype.ir = function(state, irs) {
-	var entry, name, ret_val;
+	var name, entry, ret_entry, call_types, operands;
 
 	if (this.cons) {
 		return this.ir_constructor(state, irs);
 	}
+
+	name = this.subexpressions[0].primary_expression.identifier;
+
+	operands = [];
+	call_types = [];
+	
 	/*
-	var i, func, se, def, dest;
-
-	//Prepare the dest
-	this.subexpressions[0].ir(state, irs);
-
-	func = this.subexpressions[0].Dest;
-	def = [];
-	dest = [];
+	var i, se;
 
 	for (i = 0; i < this.expressions.length; i++) {
 
 		se = this.expressions[i];
 		se.ir(state, irs);
 
-		def.push(se.Type);
-		dest.push(se.Dest);
+		call_types.push(se.Type);
+		operands.push(se.Dest);
 	}
 	*/
-	name = this.subexpressions[0].primary_expression.identifier;
 
-	//entry = state.symbols.get_function(name, null, def);
-	entry = state.symbols.get_function(name, null, null);
+	entry = state.symbols.get_function(name, call_types);
 	if (!entry) {
-		//ir_error(util.format("Function %s(%s) is not defined", func, def_names.join(",")), this);
-		ir_error(util.format("Function %s(%s) is not defined", name, null), this);
+		ir_error(util.format("Function %s(%s) is not defined", name, call_types.join(", ")), this);
 	}
 
 	this.Type = entry.type;
@@ -579,18 +571,24 @@ AstFunctionExpression.prototype.ir = function(state, irs) {
 
 	irs.push(new IrComment(util.format("%s(%s) => %s %s", name, /*dest.join(", ")*/null, this.Type, this.Dest), this.location));
 
-	//dest.unshift(this.Dest);
-
 	if (entry.code) {
-		irs.build(entry.code, dest);
-	} else if (entry.Ast) {
-		ret_val = irs.getTemp();
+
+		//Use function template
+		operands.unshift(this.Dest);
+		irs.build(entry.code, operands);
 		
-		//@todo: find a better way to relay this information
-		state.function_ret_val = ret_val;
+	} else if (entry.Ast) {
 		debugger;
+		//Rebuild inline function from AST
+		state.symbols.push_scope();
+
+		//Create a return entry for the new call scope
+		ret_entry = state.symbols.add_variable("<return>", this.Type);
+		ret_entry.out = this.Dest;
+
 		entry.Ast.ir(state, irs);
-		this.Dest = entry.Ast.Dest;
+
+		state.symbols.pop_scope();
 	}
 };
 
@@ -742,17 +740,15 @@ AstSelectionStatement.prototype.ir = function(state, irs) {
  * @param   ast_node    Statement
  */
 AstJumpStatement.prototype.ir = function(state, irs) {
-	var ret, assign, lhs;
+	var ret, ret_entry, assign, lhs;
 
 	ret = this.opt_return_value;
 
 	if (ret) {
-
-		if (!state.function_ret_val) {
-			throw new Error("Missing return value");
-		}
-
+		
 		ret.ir(state, irs);
+
+		ret_entry = state.symbols.get_variable('<return>');
 
 		//@todo: need to compare return value type with current function type
 
@@ -762,7 +758,7 @@ AstJumpStatement.prototype.ir = function(state, irs) {
 		lhs = new AstNode();
 		lhs.setLocation(this.getLocation());
 		lhs.Type = ret.Type;
-		lhs.Dest = state.function_ret_val;
+		lhs.Dest = ret_entry.out;
 
 		assign = new AstExpression('=', lhs, ret);
 		assign.setLocation(this.getLocation());

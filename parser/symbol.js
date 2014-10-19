@@ -127,7 +127,7 @@ proto.add_function = function(name, type, def) {
 	var entry;
 
 	//don't readd the exact same function definition
-	entry = this.get_function(name, type, def);
+	entry = this.get_function(name, def);
 	if (entry) {
 		return entry;
 	}
@@ -165,7 +165,7 @@ proto.get_type = function(name) {
 /**
  * 
  */
-proto.get_function = function(name, type, def) {
+proto.get_function = function(name, def) {
 	
 	var entry = this.get_entry(name, SymbolTableEntry.typedef.func, def);
 	
