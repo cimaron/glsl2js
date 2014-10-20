@@ -94,7 +94,7 @@ gulp.task('watch', function() {
         '*.js',
         'library/*.js',
         'ir/*.js',
-        'output/*.js',
+        'output/**/*.js',
         'parser/*.js',
         'parser/*.jison',
         'preprocessor/*.js'

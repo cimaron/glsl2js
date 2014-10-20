@@ -89,7 +89,7 @@ proto.addObjectCode = function(object, target) {
 		try {
 			this.instruction(object.code[i]);
 		} catch (e) {
-			this.error = e;
+			this.error = util.format("%s at %s:%s", e.message, e.lineNumber, e.columnNumber);
 			return false;
 		}
 	}
@@ -229,13 +229,17 @@ proto.instruction = function(ins) {
 proto.replaceOperand = function(tpl, from, op, n) {
 	var i,
 	    out,
-		name,
-		addr,
-		swz = ['x', 'y', 'z', 'w']
+	    name,
+	    addr,
+	    swz = ['x', 'y', 'z', 'w']
 		;
 
-	name = op.jstemp[n] ? 'jstemp' : op.name;
-	addr = op.jstemp[n] ? n : op.start + op.components[n];
+	if (op.raw) {
+		name = op.name;
+	} else {
+		name = op.jstemp[n] ? 'jstemp' : op.name;
+		addr = op.jstemp[n] ? n : op.start + op.components[n];
+	}
 
 	if (op.components) {
 		out = tpl.replace(from + '.*', util.format("%s[%s]", name, addr));
@@ -270,9 +274,10 @@ proto.buildComponents = function(opr, dest) {
 
 	if (opr.raw) {
 		out.name = opr.raw;
+		out.raw = true;
 		return out;
 	}
-	
+
 	out.name = opr.name + '_f32';
 	out.start = 4 * opr.address;
 	out.components = [];
