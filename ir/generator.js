@@ -39,6 +39,7 @@ glsl.generate = function(state) {
 			state.translation_unit[i].ir(state, irs);
 		}
 
+		state.symbols.add_variable("<returned>", irs.getTemp());
 		main = state.symbols.get_function('main', 'void');
 		main.Ast.ir(state, irs);
 
@@ -207,11 +208,33 @@ AstFunction.prototype.ir = function(state, irs) {
  * @param   object   irs     IR representation
  */
 AstCompoundStatement.prototype.ir = function(state, irs) {
-	var i, stmt;
+	var i, stmt, retd_entry, maybe_returned;
+
+	retd_entry = state.symbols.get_variable("<returned>");
+	maybe_returned = false;
 
 	for (i = 0; i < this.statements.length; i++) {
+
 		stmt = this.statements[i];
+
 		stmt.ir(state, irs);
+
+		if (stmt instanceof AstJumpStatement && stmt.mode == ast_jump_modes._return) {
+			
+			//Returning from block, set return status, and skip following instructions in block (unreachable)
+			retd_entry.Passed = true;
+			irs.push(new IrInstruction("MOV", retd_entry.out + ".x", "1.0"));
+			break;
+		}
+
+		if (!maybe_returned && retd_entry.Passed) {
+			maybe_returned = true;
+			irs.push(new IrInstruction("IF", retd_entry.out + ".x"));
+		}
+	}
+	
+	if (maybe_returned) {
+		irs.push(new IrInstruction("ENDIF"));	
 	}
 };
 
@@ -363,7 +386,7 @@ AstExpression.prototype.ir_op = function(state, irs) {
  * @param   object   state   GLSL state
  * @param   object   irs     IR representation
  */
-AstExpression.prototype.ir_assign = function(state, irs, local) {
+AstExpression.prototype.ir_assign = function(state, irs, skip_comment/*, local*/) {
 	var cond, ir, temp, size, slots, swz, i, entry, lhs, rhs;
 
 	lhs = this.subexpressions[0];
@@ -389,7 +412,9 @@ AstExpression.prototype.ir_assign = function(state, irs, local) {
 		ir_error(util.format("Cannot assign value to constant %s", lhs.Dest), this);	
 	}
 
-	irs.push(new IrComment(util.format("(%s = %s) => %s %s", lhs.Dest, rhs.Dest, lhs.Type, lhs.Dest), this.location));
+	if (!skip_comment) {
+		irs.push(new IrComment(util.format("(%s = %s) => %s %s", lhs.Dest, rhs.Dest, lhs.Type, lhs.Dest), this.location));
+	}	
 
 	size = types[this.Type].size;
 	slots = types[this.Type].slots;
@@ -537,7 +562,7 @@ AstExpression.prototype.ir_generate = function(state, irs, len) {
  * @param   object   irs     IR representation
  */
 AstFunctionExpression.prototype.ir = function(state, irs) {
-	var name, entry, ret_entry, call_types, operands;
+	var name, entry, ret_entry, retd_entry, call_types, operands;
 
 	if (this.cons) {
 		return this.ir_constructor(state, irs);
@@ -578,13 +603,16 @@ AstFunctionExpression.prototype.ir = function(state, irs) {
 		irs.build(entry.code, operands);
 		
 	} else if (entry.Ast) {
-		debugger;
+
 		//Rebuild inline function from AST
 		state.symbols.push_scope();
 
 		//Create a return entry for the new call scope
 		ret_entry = state.symbols.add_variable("<return>", this.Type);
 		ret_entry.out = this.Dest;
+
+		retd_entry = state.symbols.add_variable("<returned>", "bool");
+		retd_entry.out = irs.getTemp();
 
 		entry.Ast.ir(state, irs);
 
@@ -762,7 +790,7 @@ AstJumpStatement.prototype.ir = function(state, irs) {
 
 		assign = new AstExpression('=', lhs, ret);
 		assign.setLocation(this.getLocation());
-		assign.ir(state, irs);
+		assign.ir_assign(state, irs, false);
 
 	} else {
 		irs.push(new IrComment("return", this.location));

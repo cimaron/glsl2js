@@ -687,16 +687,16 @@ proto.toString = function() {
 	switch (this.mode) {
 
 		case ast_jump_modes._continue:
-			return "continue;";
+			return "continue;\n";
 		
 		case ast_jump_modes._break:
-			return "break;";
+			return "break;\n";
 		
 		case ast_jump_modes._return:
-			return util.format("return%s;", this.opt_return_value ? " " + this.opt_return_value : "");
+			return util.format("return%s;\n", this.opt_return_value ? " " + this.opt_return_value : "");
 		
 		case ast_jump_modes._discard:
-			return "discard;";
+			return "discard;\n";
 	}
 };
 
