@@ -70,6 +70,23 @@ GlslProgramJavascript.translation_table = {
 	'TEX' : '%1.* = tex(%3, %2.x, %2.y, 0)'
 }; 
 
+/**
+ * Return string representation of program
+ *
+ * @param   int   target   target
+ *
+ * @return  string
+ */
+proto.toString = function(target) {
+
+	if (target === glsl.target.fragment) {
+		return this.fragment_code.join("\n");	
+	} else if (target === glsl.target.vertex) {
+		return this.vertex_code.join("\n");	
+	} else {
+		return this.current.join("\n");
+	}
+};
 
 /**
  * Translates IR code into a javascript representation
