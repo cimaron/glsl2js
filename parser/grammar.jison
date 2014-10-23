@@ -735,7 +735,10 @@ function_header_with_parameters:
 			  	$$ = $1;
 				$$.parameters.push($2);
 			}
-		| function_header_with_parameters ',' parameter_declaration
+		| function_header_with_parameters ',' parameter_declaration {
+			  	$$ = $1;
+				$$.parameters.push($3);
+        }
 		;
 
 /* Line: 804 */
@@ -752,15 +755,40 @@ function_header:
 
 /* Line: 818 */
 parameter_declarator:
-			type_specifier any_identifier
+			type_specifier any_identifier {
+                $$ = {};
+                $$.type = $1;
+                $$.identifier = $2;
+            }
 		|	type_specifier any_identifier '[' constant_expression ']'
 		;
 
 /* Line: 843 */
 parameter_declaration:
-		  parameter_type_qualifier parameter_qualifier parameter_declarator
-		| parameter_qualifier parameter_declarator
-		| parameter_type_qualifier parameter_qualifier parameter_type_specifier
+		  parameter_type_qualifier parameter_qualifier parameter_declarator {
+				$$ = new AstParameterDeclarator();
+				$$.setLocation(@1);
+				$$.type = new AstFullySpecifiedType();
+				$$.type.qualifier = [ $1, $2 ];
+                $$.type.specifier = $3.type;
+				$$.identifier = $3.identifier;
+            }
+		| parameter_qualifier parameter_declarator {
+				$$ = new AstParameterDeclarator();
+				$$.setLocation(@1);
+				$$.type = new AstFullySpecifiedType();
+				$$.type.qualifier = $1;
+				$$.type.specifier = $2.type;
+				$$.identifier = $2.identifier;
+			}
+		| parameter_type_qualifier parameter_qualifier parameter_type_specifier {
+				$$ = new AstParameterDeclarator();
+				$$.setLocation(@1);
+				$$.type = new AstFullySpecifiedType();
+				$$.type.qualifier = [ $1, $2 ];
+                $$.type.specifier = $3.type;
+				$$.identifier = $3.identifier;
+        }
 		| parameter_qualifier parameter_type_specifier {
 				$$ = new AstParameterDeclarator();
 				$$.setLocation(@1);

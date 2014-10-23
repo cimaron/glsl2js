@@ -368,21 +368,27 @@ proto = AstFullySpecifiedType.prototype;
  * @return  string
  */
 proto.toString = function() {
-	var q, qual = "";
+	var q,
+		output = [];
 
-	if (this.qualifier && this.qualifier.flags !== 0) {
+	// If qualifier is an array it has multiple qualifiers, so join them
+	if( Array.isArray( this.qualifier ) ) {
+		output = output.concat( this.qualifier );
+	} else if (this.qualifier && this.qualifier.flags !== 0) {
 		for (q in AstTypeQualifier) {
 			if (AstTypeQualifier.hasOwnProperty(q)) {
 				if (this.qualifier.flags & AstTypeQualifier[q]) {
-					qual += q + " ";
+					output.push(q);
+					break;
 				}
 			}
 		}
 	}
 
-	return qual + this.specifier;
-};
+	output.push( this.specifier );
 
+	return output.join(' ');
+};
 
 /**
  * AST Declaration Class
