@@ -109,8 +109,9 @@ AstDeclaratorList.prototype.ir = function(state, irs) {
 	var type, qualifier, i, decl, name, entry, constant, assign, lhs;
 
 	type = this.type;
+
 	if (type.qualifier) {
-		qualifier = type.qualifier.flags;
+		qualifier = type.qualifier;
 	}
 
 	for (i = 0; i < this.declarations.length; i++) {
@@ -123,17 +124,17 @@ AstDeclaratorList.prototype.ir = function(state, irs) {
 		entry.type = type.specifier.type_name;
 		entry.qualifier = qualifier;
 
-		if (entry.qualifier & AstTypeQualifier.uniform) {
+		if (qualifier.indexOf('uniform') !== -1) {
 			entry.out = irs.getUniform(entry);
-		} else if (entry.qualifier & AstTypeQualifier.attribute) {
+		} else if (qualifier.indexOf('attribute') !== -1) {
 			entry.out = irs.getAttribute(entry);
-		} else if (entry.qualifier & AstTypeQualifier.varying) {
+		} else if (qualifier.indexOf('varying') !== -1) {
 			entry.out = irs.getVarying(entry);
 		} else {
-			entry.out = irs.getTemp();			
+			entry.out = irs.getTemp();
 		}
 
-		constant = (qualifier & AstTypeQualifier.constant);
+		constant = (qualifier === 'const');
 
 		if (decl.initializer) {
 

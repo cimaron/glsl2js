@@ -218,7 +218,7 @@ proto = AstFunction.prototype;
  * @return  string
  */
 proto.toString = function() {
-	return util.format("%s %s(%s)", this.return_type, this.identifier, this.parameters);			
+	return util.format("%s %s(%s)", this.return_type, this.identifier, this.parameters.join(", "));			
 };
 
 /**
@@ -335,31 +335,13 @@ proto.toString = function() {
 	}
 };
 
-AstTypeQualifier = {
-	invariant : 1,
-	constant : 2,
-	attribute : 4,
-	varying : 8,
-	_in : 16,
-	out : 32,
-	centroid : 64,
-	uniform : 128,
-	smooth : 256,
-	flat : 512,
-	noperspective : 1024,
-	origin_upper_left : 2048,
-	pixel_center_integer : 4096,
-	explicit_location : 8192
-};
-
-
 /**
  * AST Fully Specified Type Class
  */
 function AstFullySpecifiedType() {
 	AstNode.apply(this);
 	
-	this.qualifier = null;
+	this.qualifier = [];
 	this.specifier = null;
 }
 
@@ -372,24 +354,10 @@ proto = AstFullySpecifiedType.prototype;
  * @return  string
  */
 proto.toString = function() {
-	var q,
-		output = [];
+	var output;
 
-	// If qualifier is an array it has multiple qualifiers, so join them
-	if( Array.isArray( this.qualifier ) ) {
-		output = output.concat( this.qualifier );
-	} else if (this.qualifier && this.qualifier.flags !== 0) {
-		for (q in AstTypeQualifier) {
-			if (AstTypeQualifier.hasOwnProperty(q)) {
-				if (this.qualifier.flags & AstTypeQualifier[q]) {
-					output.push(q);
-					break;
-				}
-			}
-		}
-	}
-
-	output.push( this.specifier );
+	output = this.qualifier.slice(0);
+	output.push(this.specifier);
 
 	return output.join(' ');
 };

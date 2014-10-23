@@ -755,55 +755,50 @@ function_header:
 
 /* Line: 818 */
 parameter_declarator:
-			type_specifier any_identifier {
-                $$ = {};
-                $$.type = $1;
-                $$.identifier = $2;
-            }
-		|	type_specifier any_identifier '[' constant_expression ']'
+		  type_specifier any_identifier {
+				$$ = new AstParameterDeclarator();
+				$$.setLocation(@1);
+				$$.type = new AstFullySpecifiedType();
+				$$.type.setLocation(@1);
+				$$.type.specifier = $1;
+				$$.type.identifier = $2; }
+		| type_specifier any_identifier '[' constant_expression ']'
 		;
 
 /* Line: 843 */
 parameter_declaration:
 		  parameter_type_qualifier parameter_qualifier parameter_declarator {
-				$$ = new AstParameterDeclarator();
-				$$.setLocation(@1);
-				$$.type = new AstFullySpecifiedType();
-				$$.type.qualifier = [ $1, $2 ];
-                $$.type.specifier = $3.type;
-				$$.identifier = $3.identifier;
-            }
+				$1.concat($2);
+				$$ = $3;
+				$$.type.qualifier = $1; }
 		| parameter_qualifier parameter_declarator {
+				$$ = $2;
+				$$.type.qualifier = $1; }
+		| parameter_type_qualifier parameter_qualifier parameter_type_specifier {
+				$1.concat($2);
 				$$ = new AstParameterDeclarator();
 				$$.setLocation(@1);
 				$$.type = new AstFullySpecifiedType();
 				$$.type.qualifier = $1;
-				$$.type.specifier = $2.type;
-				$$.identifier = $2.identifier;
-			}
-		| parameter_type_qualifier parameter_qualifier parameter_type_specifier {
-				$$ = new AstParameterDeclarator();
-				$$.setLocation(@1);
-				$$.type = new AstFullySpecifiedType();
-				$$.type.qualifier = [ $1, $2 ];
-                $$.type.specifier = $3.type;
-				$$.identifier = $3.identifier;
-        }
+				$$.type.specifier = $3; }
 		| parameter_qualifier parameter_type_specifier {
 				$$ = new AstParameterDeclarator();
 				$$.setLocation(@1);
 				$$.type = new AstFullySpecifiedType();
 				$$.type.qualifier = $1;
-				$$.type.specifier = $2;
-			}
+				$$.type.specifier = $2; }
 		;
 
 /* Line: 878 */
 parameter_qualifier:
-			/* empty */
-		|	'IN'
-		|	'OUT'
-		|	'INOUT'
+		  /* empty */ {
+			  $$ = []; }
+		| 'IN' {
+			$$ = ['in']; }
+		| 'OUT' {
+			$$ = ['out']; }
+		| 'INOUT' {
+			$$ = ['inout']; }
 		;
 
 /* Line: 901 */
@@ -906,9 +901,9 @@ interpolation_qualifier:
 
 /* Line: 1182 */
 parameter_type_qualifier:
-			'CONST'
+		  'CONST' {
+				$$ = ['const']; }
 		;
-
 
 /* Line: 1190 */
 type_qualifier:
@@ -924,43 +919,24 @@ type_qualifier:
 
 /* Line: 1222 */
 storage_qualifier:
-		  'CONST'
+		  'CONST' {
+				$$ = ['const']; }
 		| 'ATTRIBUTE' /* Vertex only. */ {
-				/*jslint bitwise: true */
-				$$ = {};
-				$$.flags |= AstTypeQualifier.attribute;
-			}
+				$$ = ['attribute']; }
 		| 'VARYING' {
-				$$ = {};
-				$$.flags |= AstTypeQualifier.varying;
-			}
+				$$ = ['varying']; }
 		| 'CENTROID' 'VARYING' {
-				$$ = {};
-				$$.flags |= AstTypeQualifier.centroid;
-				$$.flags |= AstTypeQualifier.varying;
-			}
+				$$ = ['centroid', 'varying']; }
 		| 'IN' {
-				$$ = {};
-				$$.flags |= AstTypeQualifier._in;
-			}
+				$$ = ['in']; }
 		| 'OUT' {
-				$$ = {};
-				$$.flags |= AstTypeQualifier.out;
-			}
+				$$ = ['out']; }
 		| 'CENTROID' 'IN' {
-				$$ = {};
-				$$.flags |= AstTypeQualifier.centroid;
-				$$.flags |= AstTypeQualifier._in;
-			}
+				$$ = ['centroid', 'in']; }
 		| 'CENTROID' 'OUT' {
-				$$ = {};
-				$$.flags |= AstTypeQualifier.centroid;
-				$$.flags |= AstTypeQualifier.out;
-			}
+				$$ = ['centroid', 'out']; }
 		| 'UNIFORM' {
-				$$ = {};
-				$$.flags |= AstTypeQualifier.uniform;
-			}
+				$$ = ['uniform']; }
 		;
 
 /* Line: 1271 */
