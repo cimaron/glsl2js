@@ -62,7 +62,11 @@ var glsl = {
 	 */
 	target : {
 		fragment : 0,
-		vertex : 1
+		'x-fragment' : 0,
+		'x-shader/x-fragment' : 0,
+		vertex : 1,
+		'x-vertex' : 1,
+		'x-shader/x-vertex' : 1
 	}
 };
 
