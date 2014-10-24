@@ -228,6 +228,7 @@ function AstExpression(oper, ex0, ex1, ex2) {
 	AstNode.apply(this);
 
 	this.oper = oper;
+	this.grouped = false;
 	this.subexpressions = [null, null, null];
 	this.primary_expression = {};
 	this.expressions = [];
@@ -264,6 +265,8 @@ proto.makeFloat = function(n) {
  */
 proto.toString = function() {
 
+	var output;
+
 	switch (this.oper) {
 		case '=':
 		case '+':
@@ -296,43 +299,57 @@ proto.toString = function() {
 		case '&=':
 		case '^=':
 		case '|=':
-			return util.format("(%s %s %s)", this.subexpressions[0], this.oper, this.subexpressions[1]);
+			output = util.format("%s %s %s", this.subexpressions[0], this.oper, this.subexpressions[1]);
+			break;
 
 		case '.':
-			return util.format("(%s.%s)", this.subexpressions[0], this.primary_expression.identifier);
+			output = util.format("%s.%s", this.subexpressions[0], this.primary_expression.identifier);
+			break;
 
 		case 'POS':
 		case 'NEG':
 		case '!':
 		case '++x':
 		case '--x':
-			return util.format("(%s%s)", this.oper, this.subexpressions[0]);
+			output = util.format("%s%s", this.oper, this.subexpressions[0]);
+			break;
 		
 		case 'x++':
 		case 'x--':
-			return util.format("(%s%s)", this.subexpressions[0], this.oper);
+			output = util.format("%s%s", this.subexpressions[0], this.oper);
+			break;
 
 		case '?:':
-			return util.format("(%s ? %s : %s)", this.subexpressions[0], this.subexpressions[1], this.subexpressions[2]);				
+			output = util.format("%s ? %s : %s", this.subexpressions[0], this.subexpressions[1], this.subexpressions[2]);				
+			break;
 
 		case '[]':
-			return util.format("(%s[%s])", this.subexpressions[0], this.subexpressions[1]);				
+			output = util.format("%s[%s]", this.subexpressions[0], this.subexpressions[1]);				
+			break;
 
 		case '()':
-			return util.format("(%s(%s))", this.subexpressions[0], this.expressions.join(", "));
+			output = util.format("%s(%s)", this.subexpressions[0], this.expressions.join(", "));
+			break;
 
 		case 'ident':
-			return util.format("%s", this.primary_expression.identifier);
+			output = util.format("%s", this.primary_expression.identifier);
+			break;
 		
 		case 'float':
-			return util.format("%s", this.primary_expression.float_constant);
+			output = util.format("%s", this.primary_expression.float_constant);
+			break;
 		
 		case 'int':
-			return util.format("%s", this.primary_expression.int_constant);
+			output = util.format("%s", this.primary_expression.int_constant);
+			break;
 		
 		case 'bool':
-			return util.format("%s", this.primary_expression.bool_constant ? 'true' : 'false');
+			output = util.format("%s", this.primary_expression.bool_constant ? 'true' : 'false');
+			break;
+
 	}
+
+	return this.grouped ? util.format("(%s)", output ) : output;
 };
 
 /**
@@ -540,16 +557,6 @@ function AstExpressionBin(oper, ex0, ex1) {
 
 util.inherits(AstExpressionBin, AstExpression);
 proto = AstExpressionBin.prototype;
-
-/**
- * Return string representation of node
- *
- * @return  string
- */
-proto.toString = function() {
-	return util.format("(%s %s %s)", this.subexpressions[0], this.oper, this.subexpressions[1]);
-};
-
 
 /**
  * AST Function Expression Class

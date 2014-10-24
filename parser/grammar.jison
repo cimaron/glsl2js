@@ -386,6 +386,7 @@ primary_expression:
 				$$.primary_expression.bool_constant = $1; }
 		| '(' expression ')' {
 				$$ = $2;
+				$$.grouped = true;
 		}
 		;
 
