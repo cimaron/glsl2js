@@ -384,7 +384,9 @@ primary_expression:
 				$$ = new AstExpression('bool');
 				$$.setLocation(@1);
 				$$.primary_expression.bool_constant = $1; }
-		| '(' expression ')'
+		| '(' expression ')' {
+				$$ = $2;
+		}
 		;
 
 /* Line: 373 */
