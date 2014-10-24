@@ -23,7 +23,8 @@ function Type(name, size, slots, base) {
 	this.name = name;
 	this.size = size;
 	this.slots = slots;
-	this.base = base;
+	this.swizzle = (size / slots != 4) ? "xyzw".slice(0, size / slots) : "";
+	this.base = base || name;
 }
 
 var types = {

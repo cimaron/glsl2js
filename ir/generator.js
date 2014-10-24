@@ -145,6 +145,7 @@ AstDeclaratorList.prototype.ir = function(state, irs) {
 				lhs = new AstExpression('ident');
 				lhs.primary_expression.identifier = name;
 				assign = new AstExpression('=', lhs, decl.initializer);
+				assign.setLocation(decl.location);
 				assign.ir(state, irs);
 			}
 
@@ -357,13 +358,13 @@ AstExpression.prototype.ir_op = function(state, irs) {
 			break;
 		case '?:':
 			break;
-		case '++_':
-		case '--_':
+		*/
+		case '++x':
+		case '--x':
+		case 'x++':
+		case 'x--':
+			this.ir_incdec(state, irs);
 			break;
-		case '_++':
-		case '_--':
-			break;
-			*/
 		//case '.': break;
 		case '[]':
 			break;
@@ -388,7 +389,7 @@ AstExpression.prototype.ir_op = function(state, irs) {
  * @param   object   irs     IR representation
  */
 AstExpression.prototype.ir_assign = function(state, irs, skip_comment/*, local*/) {
-	var cond, ir, temp, size, slots, swz, i, entry, lhs, rhs;
+	var cond, ir, temp, size, slots, swz, i, entry, lhs, rhs, com;
 
 	lhs = this.subexpressions[0];
 	rhs = this.subexpressions[1];
@@ -414,7 +415,8 @@ AstExpression.prototype.ir_assign = function(state, irs, skip_comment/*, local*/
 	}
 
 	if (!skip_comment) {
-		irs.push(new IrComment(util.format("(%s = %s) => %s %s", lhs.Dest, rhs.Dest, lhs.Type, lhs.Dest), this.location));
+		com = util.format("(%s|%s = %s) => %s %s", lhs.toString(), lhs.Dest, rhs.Dest, lhs.Type, lhs.Dest);
+		irs.push(new IrComment(com, this.location));
 	}	
 
 	size = types[this.Type].size;
@@ -553,6 +555,56 @@ AstExpression.prototype.ir_generate = function(state, irs, len) {
 	irs.push(new IrComment(comment, this.location));
 
 	irs.build(table[j], dest);
+};
+
+/**
+ * Constructs an pre/post increment/decrement expression
+ *
+ * @param   object   state   GLSL state
+ * @param   object   irs     IR representation
+ */
+AstExpression.prototype.ir_incdec = function(state, irs) {
+	var se, op, ins, post, type, i, ir;
+
+	se = this.subexpressions[0];
+
+	op = this.oper.replace('x', '');
+	ins = op === '++' ? 'ADD' : 'SUB';
+	post = this.oper.indexOf('x') === 0;
+	type = types[se.Type];
+
+	//Type check: base type must be int or float
+	if (type.base != 'int' && type.base != 'float') {
+		ir_error(util.format("Could not apply operation %s to %s", op, se.Type), this);
+	}
+
+	this.Type = se.Type;
+
+	if (post) {
+		//For post increment, the returned happens before the increment, so we need a temp to store it
+		this.Dest = irs.getTemp();
+	} else {
+		this.Dest = se.Dest;	
+	}
+
+	irs.push(new IrComment(util.format("(%s%s) => %s %s", post ? se.Dest : op, post ? op : se.Dest, this.Type, this.Dest), this.location));
+	
+	for (i = 0; i < type.slots; i++) {
+
+		if (post) {
+			this.Dest = irs.getTemp();
+			ir = new IrInstruction('MOV', this.Dest, se.Dest);
+			ir.addOffset(i);
+			ir.setSwizzle(type.swizzle);
+			irs.push(ir);
+		}
+
+		ir = new IrInstruction(ins, se.Dest, se.Dest, "1.0");
+		ir.addOffset(i);
+		ir.setSwizzle(type.swizzle);
+		irs.push(ir);
+	}
+
 };
 
 
