@@ -311,12 +311,12 @@ proto.toString = function() {
 		case '!':
 		case '++x':
 		case '--x':
-			output = util.format("%s%s", this.oper, this.subexpressions[0]);
+			output = util.format("%s%s", this.oper.replace('x', ''), this.subexpressions[0]);
 			break;
 		
 		case 'x++':
 		case 'x--':
-			output = util.format("%s%s", this.subexpressions[0], this.oper);
+			output = util.format("%s%s", this.subexpressions[0], this.oper.replace('x', '') );
 			break;
 
 		case '?:':
