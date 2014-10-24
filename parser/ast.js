@@ -19,6 +19,7 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+glsl.node = {};
 
 /**
  * Base class of all abstract syntax tree nodes
@@ -38,6 +39,7 @@ function AstNode() {
 }
 
 var proto = AstNode.prototype;
+glsl.node.AstNode = AstNode;
 
 //public:
 proto.getLocation = function() {
@@ -144,6 +146,7 @@ function AstTypeSpecifier(specifier) {
 
 util.inherits(AstTypeSpecifier, AstNode);
 proto = AstTypeSpecifier.prototype;
+glsl.node.AstTypeSpecifier = AstTypeSpecifier;
 
 //overloaded constructors
 AstTypeSpecifier.number = function(specifier) {
@@ -211,6 +214,7 @@ function AstFunction() {
 
 util.inherits(AstFunction, AstNode);
 proto = AstFunction.prototype;
+glsl.node.AstFunction = AstFunction;
 
 /**
  * Return string representation of node
@@ -245,6 +249,7 @@ function AstExpression(oper, ex0, ex1, ex2) {
 
 util.inherits(AstExpression, AstNode);
 proto = AstExpression.prototype;
+glsl.node.AstExpression = AstExpression;
 
 /**
  * Makes number a float representation
@@ -364,6 +369,7 @@ function AstFullySpecifiedType() {
 
 util.inherits(AstFullySpecifiedType, AstNode);
 proto = AstFullySpecifiedType.prototype;
+glsl.node.AstFullySpecifiedType = AstFullySpecifiedType;
 
 /**
  * Return string representation of node
@@ -393,6 +399,7 @@ function AstDeclaration(identifier, is_array, array_size, initializer) {
 
 util.inherits(AstDeclaration, AstNode);
 proto = AstDeclaration.prototype;
+glsl.node.AstDeclaration = AstDeclaration;
 
 /**
  * Return string representation of node
@@ -419,6 +426,7 @@ function AstDeclaratorList(type) {
 
 util.inherits(AstDeclaratorList, AstNode);
 proto = AstDeclaratorList.prototype;
+glsl.node.AstDeclaratorList = AstDeclaratorList;
 
 /**
  * Return string representation of node
@@ -445,6 +453,7 @@ function AstParameterDeclarator() {
 
 util.inherits(AstParameterDeclarator, AstNode);
 proto = AstParameterDeclarator.prototype;
+glsl.node.AstParameterDeclarator = AstParameterDeclarator;
 
 /**
  * Return string representation of node
@@ -470,6 +479,7 @@ function AstExpressionStatement(ex) {
 
 util.inherits(AstExpressionStatement, AstNode);
 proto = AstExpressionStatement.prototype;
+glsl.node.AstExpressionStatement = AstExpressionStatement;
 
 /**
  * Return string representation of node
@@ -496,6 +506,7 @@ function AstCompoundStatement(new_scope, statements) {
 
 util.inherits(AstCompoundStatement, AstNode);
 proto = AstCompoundStatement.prototype;
+glsl.node.AstCompoundStatement = AstCompoundStatement;
 
 /**
  * Return string representation of node
@@ -538,6 +549,7 @@ function AstFunctionDefinition() {
 
 util.inherits(AstFunctionDefinition, AstNode);
 proto = AstFunctionDefinition.prototype;
+glsl.node.AstFunctionDefinition = AstFunctionDefinition;
 
 /**
  * Return string representation of node
@@ -557,6 +569,7 @@ function AstExpressionBin(oper, ex0, ex1) {
 
 util.inherits(AstExpressionBin, AstExpression);
 proto = AstExpressionBin.prototype;
+glsl.node.AstExpressionBin = AstExpressionBin;
 
 /**
  * AST Function Expression Class
@@ -577,6 +590,7 @@ function AstFunctionExpression(arg) {
 
 util.inherits(AstFunctionExpression, AstExpression);
 proto = AstFunctionExpression.prototype;
+glsl.node.AstFunctionExpression = AstFunctionExpression;
 
 proto.is_constructor = function() {
 	return this.cons;
@@ -600,6 +614,7 @@ function AstSelectionStatement(condition, then_statement, else_statement) {
 
 util.inherits(AstSelectionStatement, AstNode);
 proto = AstSelectionStatement.prototype;
+glsl.node.AstSelectionStatement = AstSelectionStatement;
 
 /**
  * Return string representation of node
@@ -631,6 +646,7 @@ AstStructSpecifier.anon_count = 1;
 
 util.inherits(AstStructSpecifier, AstNode);
 proto = AstStructSpecifier.prototype;
+glsl.node.AstStructSpecifier = AstStructSpecifier;
 
 
 
@@ -657,6 +673,7 @@ var ast_jump_modes = {
 
 util.inherits(AstJumpStatement, AstNode);
 proto = AstJumpStatement.prototype;
+glsl.node.AstJumpStatement = AstJumpStatement;
 
 /**
  * Return string representation of node
