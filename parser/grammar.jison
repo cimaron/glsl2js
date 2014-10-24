@@ -397,10 +397,14 @@ postfix_expression:
 		| function_call
 		| postfix_expression '.' any_identifier {
 				$$ = new AstExpression('.', $1);
-				$$.setLocation(@1);				
+				$$.setLocation(@1);
 				$$.primary_expression.identifier = $3; }
-		| postfix_expression '++'
-		| postfix_expression '--'
+		| postfix_expression '++' {
+				$$ = new AstExpression('x++', $1);
+				$$.setLocation(@1); }
+		| postfix_expression '--' {
+				$$ = new AstExpression('x--', $1);
+				$$.setLocation(@1); }
 		;
 
 /* Line: 406 */
@@ -498,11 +502,11 @@ method_call_header:
 unary_expression:
 		  postfix_expression
 		| '++' unary_expression {
-				$$ = new AstExpression($1, $2);
+				$$ = new AstExpression('++x', $2);
 				$$.setLocation(@1);
 			}
 		| '--' unary_expression {
-				$$ = new AstExpression($1, $2);
+				$$ = new AstExpression('--x', $2);
 				$$.setLocation(@1);
 			}
 		| unary_operator unary_expression {
