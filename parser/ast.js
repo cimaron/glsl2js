@@ -682,4 +682,22 @@ proto.toString = function() {
 };
 
 
+glsl.ast = {
+	Node : AstNode,
+	TypeSpecifier : AstTypeSpecifier,
+	Function : AstFunction,
+	Expression : AstExpression,	
+	FullySpecifiedType : AstFullySpecifiedType,
+	Declaration : AstDeclaration,
+	DeclaratorList : AstDeclaratorList,
+	ParameterDeclarator : AstParameterDeclarator,
+	ExpressionStatement : AstExpressionStatement,
+	CompoundStatement : AstCompoundStatement,
+	FunctionDefinition : AstFunctionDefinition,
+	ExpressionBin : AstExpressionBin,
+	FunctionExpression : AstFunctionExpression,
+	SelectionStatement : AstSelectionStatement,
+	StructSpecifier : AstStructSpecifier,
+	JumpStatement : AstJumpStatement	
+};
 
