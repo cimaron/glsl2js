@@ -74,6 +74,7 @@ gulp.task('glsl', ['parser', 'generator'], function() {
 	return gulp.src([
 		'glsl.js',
 		'library/util.js',
+		'state.js',
 		'build/parser.js',
 		'build/ir.js'
 		])
