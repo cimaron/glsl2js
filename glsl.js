@@ -21,40 +21,33 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 var glsl = {
 	
-	state : null,
-	
-	error : [],
-
-	compile : function(source, options) {
-		var processed,
-		    state,
+	compile : function(src, options) {
+		var state,
+			result,
 		    irs
 		    ;
 
+		state = new GlslState(options);
+		state.setSource(src);
+
 		//Preprocess
-		processed = this.preprocessor.process(source);
-		if (!processed) {
-			this.error = this.preprocessor.error;
-			return false;
+		result = this.preprocessor.process(state);
+
+		//Parse into AST
+		if (result) {
+			result = this.parse(state);
 		}
 
-		state = this.parse(processed, options);
-		if (state.error) {
-			this.error = state.info_log;
-			return false;
+		//Generate IR
+		if (result) {
+			result = this.generate(state);
 		}
 
-		this.state = state;
-		irs = this.generate(this.state);
-		if (!irs) {
-			this.error = this.state.info_log;	
+		if (result) {
+			state.status = true;	
 		}
 
-		return irs;
-	},
-
-	getLastError : function() {
-		return this.error;
+		return state;
 	},
 
 	/**
@@ -69,4 +62,5 @@ var glsl = {
 		'x-shader/x-vertex' : 1
 	}
 };
+
 

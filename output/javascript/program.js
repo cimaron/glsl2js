@@ -192,7 +192,7 @@ proto.instruction = function(ins) {
 	var tpl, dest, src, i, j, k, code, js;
 
 	if (ins instanceof IrComment) {
-		this.current.push('    // ' + ins.toString());
+		this.current.push('// ' + ins.toString());
 		return;
 	}
 
@@ -254,8 +254,15 @@ proto.replaceOperand = function(tpl, from, op, n) {
 	if (op.raw) {
 		name = op.name;
 	} else {
-		name = op.jstemp[n] ? 'jstemp' : op.name;
-		addr = op.jstemp[n] ? n : op.start + op.components[n];
+		if (op.jstemp && op.jstemp[n]) {
+			name = 'jstemp';
+			addr = n;
+		} else {
+			name = op.name;
+			if (op.components) {
+				addr = op.start + op.components[n];
+			}
+		}
 	}
 
 	if (op.components) {

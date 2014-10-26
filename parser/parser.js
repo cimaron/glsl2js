@@ -19,26 +19,30 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-function glsl_state(options) {
+function GlslState(options) {
 	var i;
-	
+
 	this.options = {
 		target : 0,
 		language_version : 100,
 	};
-	
+
 	for (i in options) {
 		this.options[i] = options[i];	
 	}
 
 	this.symbols = new SymbolTable();
-	this.translation_unit = [];
+	symbol_table_init(this.symbols, options.target);
 
-	this.info_log = [];
-	this.error = false;
+	this.status = false;
+	this.translation_unit = "";
+	this.ast = [];
+	this.ir = null;
+
+	this.errors = [];
 }
 
-proto = glsl_state.prototype = {};
+proto = GlslState.prototype = {};
 
 /**
  * Get identifier type
@@ -62,6 +66,42 @@ proto.classify_identifier = function(name) {
 	}
 };
 
+proto.setSource = function(src) {
+	this.src = src;
+};
+
+proto.getSource = function() {
+	return this.src;
+};
+
+proto.setTranslationUnit = function(tu) {
+	this.translation_unit = tu;	
+};
+
+proto.getTranslationUnit = function() {
+	return this.translation_unit;
+};
+
+proto.addAstNode = function(node) {
+	this.ast.push(node);
+};
+
+proto.getAst = function() {
+	return this.ast;
+};
+
+proto.setIR = function(ir) {
+	this.ir = ir;
+};
+
+proto.getIR = function() {
+	return this.ir;
+};
+
+proto.getStatus = function() {
+	return this.status;
+};
+
 
 /**
  * Add error to state
@@ -75,20 +115,24 @@ proto.addError = function(msg, line, column) {
 
 	err = util.format("%s at line %s, column %s", msg, line, column);
 
-	this.error = true;
-	this.info_log.push(err);
+	this.errors.push(err);
 };
+
+/**
+ * Get compile errors
+ *
+ * @return  mixed
+ */
+proto.getErrors = function() {
+	return this.errors;
+}
 
 
 /**
  * Jison parser compatibility
  */
-glsl.parse = function(src, options) {
-	var result, state;
-
-	state = new glsl_state(options);
-
-	symbol_table_init(state);
+glsl.parse = function(state) {
+	var result;
 
 	parser.yy =  {
 		test : 1,
@@ -96,11 +140,12 @@ glsl.parse = function(src, options) {
 	};
 
 	try {
-		result = parser.parse(src);
+		parser.parse(state.getTranslationUnit());
 	} catch(e) {
 		state.addError(e.message, e.lineNumber, e.columnNumber);
+		return false;
 	}
 
-	return state;
+	return true;
 };
 	

@@ -167,14 +167,14 @@ function _builtinParseType(str) {
 }
 
 
-function symbol_table_init(state) {
+function symbol_table_init(table, target) {
 	var i, j, vars, v, entry, types, name;
 
-	vars = (state.options.target === glsl.target.vertex) ? builtin.vars.vertex : builtin.vars.fragment;
+	vars = (target === glsl.target.vertex) ? builtin.vars.vertex : builtin.vars.fragment;
 
 	for (i = 0; i < vars.length; i++) {
 		v = vars[i];
-		entry = state.symbols.add_variable(v.name, v.type);
+		entry = table.add_variable(v.name, v.type);
 		entry.position = v.position;
 		entry.out = v.out;
 	}
@@ -185,7 +185,7 @@ function symbol_table_init(state) {
 		v = vars[name];
 		for (j in v) {
 			types = _builtinParseType(j);	
-			entry = state.symbols.add_function(name, types.dest, types.src);
+			entry = table.add_function(name, types.dest, types.src);
 			entry.code = v[j]
 		}
 	}

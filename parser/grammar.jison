@@ -350,12 +350,12 @@ extension_statement:
 external_declaration_list:
 	  external_declaration {
 			if ($1 !== null) {
-				yy.state.translation_unit.push($1);
+				yy.state.addAstNode($1);
 			}
 		}
 	| external_declaration_list external_declaration {
 			if ($2 !== null) {
-				yy.state.translation_unit.push($2);
+				yy.state.addAstNode($2);
 			}
 		}
 	;

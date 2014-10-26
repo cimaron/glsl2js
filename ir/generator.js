@@ -29,14 +29,18 @@ CONNECTION WITH THE SOFTWARE OR THE USE		 OR OTHER DEALINGS IN THE SOFTWARE.
  * @return  string
  */
 glsl.generate = function(state) {
-	var irs, main;
-
+	var irs,
+	    ast,
+	    i
+		;
+	
 	irs = new Ir(state.options.target);
-
+	ast = state.getAst();
+	
 	try {
 
-		for (var i = 0; i < state.translation_unit.length; i++) {
-			state.translation_unit[i].ir(state, irs);
+		for (i = 0; i < ast.length; i++) {
+			ast[i].ir(state, irs);
 		}
 
 		state.symbols.add_variable("<returned>", irs.getTemp());
@@ -44,17 +48,18 @@ glsl.generate = function(state) {
 		main.Ast.ir(state, irs);
 
 	} catch (e) {
+
 		if (!e.ir) {
 			e.message = "compiler error: " + e.message;
 		}
+
 		state.addError(e.message, e.lineNumber, e.columnNumber);
+		return false;
 	}
 
-	if (state.error) {
-		return false;	
-	}
+	state.setIR(irs);
 
-	return irs;
+	return true;
 };
 
 /**
@@ -798,6 +803,15 @@ AstSelectionStatement.prototype.ir = function(state, irs) {
 
 	//set a flag based on the result
 	ir = new IrInstruction('IF', this.condition.Dest);
+
+	if (['bool', 'int', 'float'].indexOf(this.condition.Type) === -1) {
+		ir_error("boolean expression expected");			
+	}
+
+	if (!ir.d.swizzle) {
+		ir.d.swizzle = 'x';
+	}
+
 	irs.push(ir);
 
 	this.then_statement.ir(state, irs);

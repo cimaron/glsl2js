@@ -21,8 +21,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 Preprocessor.modules.comments = {
 
-	error : null,
-
 	process : function(src) {
 		var i,
 		    chr,

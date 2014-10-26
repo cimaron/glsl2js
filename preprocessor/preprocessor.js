@@ -23,34 +23,30 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * Preprocessor Class
  */
 function Preprocessor() {
-	this.error = [];
 }
 
 Preprocessor.modules = {};
 
 var proto = Preprocessor.prototype;
 
-proto.process = function(src) {
-	var m;
-
-	this.error = null;
+proto.process = function(state) {
+	var m,
+	    out = state.getSource()
+		;
 
 	for (m in Preprocessor.modules) {
-		
-		try {
-			result = Preprocessor.modules[m].process(src);
-		} catch (e) {
-			this.error.push(util.format("compiler error: %s at line %s, column %s", e.message, e.lineNumber, e.columnNumber));
-			return false;
-		}
 
-		if (!result) {
-			this.error.push(Preprocessor.modules[m].error);
+		try {
+			out = Preprocessor.modules[m].process(out);
+		} catch (e) {
+			state.addError(e.message, e.lineNumber, e.columnNumber);
 			return false;
 		}
 	}
 
-	return result;
+	state.setTranslationUnit(out);
+
+	return true;
 };
 
 glsl.preprocessor = new Preprocessor();
