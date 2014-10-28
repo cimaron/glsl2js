@@ -164,6 +164,11 @@ IrOperand.prototype.parse = function(str) {
 		return;
 	}
 
+	if (!isNaN(parseFloat(str))) {
+		this.raw = str;
+		return;
+	}
+
 	//neg
 	regex = "(\-)?";
 

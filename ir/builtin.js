@@ -60,6 +60,7 @@ var builtin = {
 				]
 			},
 		"+" : {
+			"int,int:int" : ["ADD %1.x %2.x %3.x"],
 			"float,float:float" : ["ADD %1.x %2.x %3.x"],
 			"vec2,vec2:vec2" : ["ADD %1.xy %2.xy %3.xy"],
 			"vec3,vec3:vec3" : ["ADD %1.xyz %2.xyz %3.xyz"],
@@ -69,7 +70,9 @@ var builtin = {
 			"float,float:float" : ["SLT %1.x %2.x %3.x"]
 			},
 		"*" : {
+			"int,int:int" : ["MUL %1.x %2.x %3.x"],
 			"float,float:float" : ["MUL %1.x %2.x %3.x"],
+			"float,vec2:vec2" : ["MUL %1.xy %2.x %3.xy"],
 			"float,vec3:vec3" : ["MUL %1.xyz %2.x %3.xyz"],
 			"float,vec4:vec4" : ["MUL %1 %2.x %3"],
 			"vec3,float:vec3" : ["MUL %1.xyz %2.xyz %3.x"],
@@ -105,7 +108,14 @@ var builtin = {
 				"MAD %1@3 %2@3 %3@3.w %1@3"
 				]
 			},
+		"/" : {
+			"int,int:int" : ["DIV %1.x %2.x %3.x"],
+			"float,float:float" : ["DIV %1.x %2.x %3.x"]
+			},
 		"-" : {
+			"int,int:int" : ["SUB %1.x %2.x %3.x"],
+			"float,float:float" : ["SUB %1.x %2.x %3.x"],
+			"vec2,vec2:vec2" : ["SUB %1.xy %2.xy %3.xy"],
 			"vec3,vec3:vec3" : ["SUB %1.xyz %2.xyz %3.xyz"],
 			"vec4,vec4:vec4" : ["SUB %1 %2 %3"]
 		}

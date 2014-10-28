@@ -321,30 +321,33 @@ AstExpression.prototype.ir_op = function(state, irs) {
 			e.Type = se[0].Type;
 			break;
 
-		//binary expression
+		//Arithmetic
 		case '+':
 		case '-':
 		case '*':
 		case '/':
 		case '%':
+		case '&':
+		case '^':
+		case '|':
+		case '~':
 		case '<<':
 		case '>>':
+			this.ir_generate(state, irs, 2, true);
+			break;
+		
+		//Boolean
 		case '<':
 		case '>':
 		case '<=':
 		case '>=':
 		case '==':
-		case '!-':
-		case '&':
-		case '^':
-		case '|':
-		case '~':
+		case '!=':
 		case '&&':
 		case '^^':
 		case '||':
 			this.ir_generate(state, irs, 2);
 			break;
-
 		case '!':
 			this.ir_generate(state, irs, 1);
 			break;
@@ -364,6 +367,8 @@ AstExpression.prototype.ir_op = function(state, irs) {
 		case '?:':
 			break;
 		*/
+		
+		//Increment / Decrement
 		case '++x':
 		case '--x':
 		case 'x++':
@@ -399,20 +404,10 @@ AstExpression.prototype.ir_assign = function(state, irs, skip_comment/*, local*/
 	lhs = this.subexpressions[0];
 	rhs = this.subexpressions[1];
 
-	if (this.oper == '+=') {
-		rhs.oper = '+';
-		//ir_expression_generate(rhs, [lhs, rhs], 2);
+	if (lhs.Type != rhs.Type || rhs.Const) {
+		this.ir_cast.apply(rhs, [state, irs, lhs.Type]);
 	}
 
-	/*
-	if (conditional.length > 0) {
-		cond = conditional[conditional.length - 1];	
-	}
-	*/
-
-	if (lhs.Type != rhs.Type) {
-		ir_error(util.format("Could not assign value of type %s to %s", rhs.Type, lhs.Type), this);
-	}
 	this.Type = lhs.Type;
 
 	if (lhs.Entry && lhs.Entry.constant) {
@@ -422,7 +417,7 @@ AstExpression.prototype.ir_assign = function(state, irs, skip_comment/*, local*/
 	if (!skip_comment) {
 		com = util.format("(%s|%s = %s) => %s %s", lhs.toString(), lhs.Dest, rhs.Dest, lhs.Type, lhs.Dest);
 		irs.push(new IrComment(com, this.location));
-	}	
+	}
 
 	size = types[this.Type].size;
 	slots = types[this.Type].slots;
@@ -455,6 +450,28 @@ AstExpression.prototype.ir_assign = function(state, irs, skip_comment/*, local*/
 	}
 };
 
+
+/**
+ * Constructs a cast operation
+ */
+AstExpression.prototype.ir_cast = function(state, irs, type) {
+
+	//Can cast to type?
+	if (Type.canCast(this.Type, type)) {
+
+		//Simple case, constant
+		if (this.Const) {
+			this.Dest = Type.castTo(this.Dest, this.Type, type);
+			this.Type = type;
+		} else {
+			//@todo: generate cast instructions
+			ir_error(util.format("Could not assign value of type %s to %s", this.Type, type), this);
+		}
+
+	} else {
+		ir_error(util.format("Could not assign value of type %s to %s", this.Type, type), this);
+	}
+};
 
 /**
  * Constructs a simple expression code block
@@ -493,16 +510,18 @@ AstExpression.prototype.ir_simple = function(state, irs) {
 	}
 
 	//float constant
-	if ('float_constant' in this.primary_expression) {
+	if (this.primary_expression.type == 'float') {
 		this.Type = 'float';
-		this.Dest = this.makeFloat(this.primary_expression.float_constant);
+		this.Dest = this.primary_expression.float_constant;
+		this.Const = true;
 		return;
 	}
 
 	//int constant
-	if ('int_constant' in this.primary_expression) {
+	if (this.primary_expression.type == 'int') {
 		this.Type = 'int';
-		this.Dest = this.makeFloat(this.primary_expression.int_constant);
+		this.Dest = this.primary_expression.int_constant;
+		this.Const = true;
 		return;
 	}
 
@@ -515,18 +534,35 @@ AstExpression.prototype.ir_simple = function(state, irs) {
  * @param   object   state   GLSL state
  * @param   object   irs     IR representation
  */
-AstExpression.prototype.ir_generate = function(state, irs, len) {
-	var table, se, types, dest, i, j, def, match, comment;
+AstExpression.prototype.ir_generate = function(state, irs, len, arith) {
+	var table, se, types, dest, i, j, def, match, comment, cnst;
 
 	if (!(table = builtin.oper[this.oper])) {
 		ir_error(util.format("Could not generate operation %s", this.oper), this);
+	}
+
+	se = this.subexpressions;
+
+	//Fold constants
+	if (state.options.opt.fold_constants && arith) {
+		if (se[0].Const && se[1].Const) {
+
+			cnst = eval(se[0].Dest + this.oper + se[1].Dest);
+
+			//If the calculation results in an error, resume normal IR generation and let it be handled at runtime
+			if (Number.isFinite(cnst)) {
+				this.Dest = "" + cnst;
+				this.Type = 'float';
+				this.Const = true;
+				return;
+			}
+		}
 	}
 
 	this.Dest = irs.getTemp();
 
 	types = [];
 	dest = [this.Dest];
-	se = this.subexpressions;
 
 	for (i = 0; i < len; i++) {
 		types.push(se[i].Type);

@@ -26,6 +26,9 @@ function GlslState(options) {
 	this.options = {
 		target : 0,
 		language_version : 100,
+		opt : {
+			fold_constants : true	
+		}
 	};
 
 	for (i in options) {

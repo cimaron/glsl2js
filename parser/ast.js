@@ -33,8 +33,10 @@ function AstNode() {
 		last_column : 0
 	};
 
+	//The following are used during IR generation
 	this.Dest = null;
 	this.Type = null;
+	this.Const = false;
 }
 
 var proto = AstNode.prototype;
@@ -245,18 +247,6 @@ function AstExpression(oper, ex0, ex1, ex2) {
 
 util.inherits(AstExpression, AstNode);
 proto = AstExpression.prototype;
-
-/**
- * Makes number a float representation
- *
- * @param   string   The string representation of a number
- *
- * @return  string
- */
-proto.makeFloat = function(n) {
-	n += (n.toString().indexOf('.') === -1) ? ".0" : "";
-	return n;
-};
 
 /**
  * Return string representation of node

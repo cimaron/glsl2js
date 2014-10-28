@@ -375,15 +375,18 @@ primary_expression:
 		| 'INTCONSTANT' {
 				$$ = new AstExpression('int');
 				$$.setLocation(@1);
-				$$.primary_expression.int_constant = $1; }
+				$$.primary_expression.int_constant = $1;
+				$$.primary_expression.type = 'int'; }
 		| 'FLOATCONSTANT' {
 				$$ = new AstExpression('float');
 				$$.setLocation(@1);
-				$$.primary_expression.float_constant = $1; }
+				$$.primary_expression.float_constant = $1;
+				$$.primary_expression.type = 'float'; }
 		| 'BOOLCONSTANT' {
 				$$ = new AstExpression('bool');
 				$$.setLocation(@1);
-				$$.primary_expression.bool_constant = $1; }
+				$$.primary_expression.bool_constant = $1;
+				$$.primary_expression.type = 'bool'; }
 		| '(' expression ')' {
 				$$ = $2;
 				$$.grouped = true;
