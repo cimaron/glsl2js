@@ -121,9 +121,9 @@ IrComment.prototype.toString = function() {
 	var c = this.comment;
 
 	if (this.loc) {
-		c = util.format("[%s:%s-%s:%s] %s", this.loc.first_line, this.loc.first_column, this.loc.last_line, this.loc.last_column, c);
+		c = util.format("%s [%s:%s-%s:%s]", c, this.loc.first_line, this.loc.first_column, this.loc.last_line, this.loc.last_column);
 	}
-	c = '# ' + c;
+	c = "\n# " + c;
 
 	return c;
 };

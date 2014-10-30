@@ -401,7 +401,7 @@ AstExpression.prototype.ir_assign = function(state, irs, skip_comment/*, local*/
 	}
 
 	if (!skip_comment) {
-		com = util.format("(%s|%s = %s) => %s %s", lhs.toString(), lhs.Dest, rhs.Dest, lhs.Type, lhs.Dest);
+		com = util.format("%s => %s %s <%s>", rhs.Dest, lhs.Type, lhs.Dest, lhs.toString());
 		irs.push(new IrComment(com, this.location));
 	}
 
@@ -670,7 +670,7 @@ AstFunctionExpression.prototype.ir = function(state, irs) {
 	this.Type = entry.type;
 	this.Dest = irs.getTemp();
 
-	irs.push(new IrComment(util.format("%s(%s) => %s %s", name, /*dest.join(", ")*/null, this.Type, this.Dest), this.location));
+	irs.push(new IrComment(util.format("%s(%s) => %s %s", name, operands.join(", "), this.Type, this.Dest), this.location));
 
 	if (entry.code) {
 
@@ -689,19 +689,21 @@ AstFunctionExpression.prototype.ir = function(state, irs) {
 			param = proto.parameters[i];
 			loc = state.symbols.add_variable(param.identifier, param.type.specifier.type_name);
 			loc.out = irs.getTemp();
-			//Add MOV operation from called param to local param
 			
+			//Add MOV operation from called param to local param
+			irs.push(new IrComment(util.format("PARAM %s => %s %s", operands[i], loc.out, param.type.specifier.type_name), param.location));
+
 			//Piggy-back off assignment generation
-			lhs = new AstNode();
+			lhs = new AstExpression('<param>');
 			lhs.setLocation(this.getLocation());
 			lhs.Type = loc.type;
 			lhs.Dest = loc.out;
 
 			assign = new AstExpression('=', lhs, this.expressions[i]);
 			assign.setLocation(this.getLocation());
-			assign.ir_assign(state, irs, false);
+			assign.ir_assign(state, irs, true);
 		}
-
+		
 		//Create a return entry for the new call scope
 		ret_entry = state.symbols.add_variable("<return>", this.Type);
 		ret_entry.out = this.Dest;
@@ -884,17 +886,17 @@ AstJumpStatement.prototype.ir = function(state, irs) {
 
 		//@todo: need to compare return value type with current function type
 
-		irs.push(new IrComment(util.format("return %s => %s", ret.Dest, ret.Type), this.location));
+		irs.push(new IrComment(util.format("return => %s %s", ret.Dest, ret.Type), this.location));
 
 		//Piggy-back off assignment generation
-		lhs = new AstNode();
+		lhs = new AstExpression('<return>');
 		lhs.setLocation(this.getLocation());
 		lhs.Type = ret.Type;
 		lhs.Dest = ret_entry.out;
 
 		assign = new AstExpression('=', lhs, ret);
 		assign.setLocation(this.getLocation());
-		assign.ir_assign(state, irs, false);
+		assign.ir_assign(state, irs, true);
 
 	} else {
 		irs.push(new IrComment("return", this.location));

@@ -192,7 +192,7 @@ proto.instruction = function(ins) {
 	var tpl, dest, src, i, j, k, code, js;
 
 	if (ins instanceof IrComment) {
-		this.current.push('// ' + ins.toString());
+		this.current.push('// ' + ins.toString().replace("\n", ""));
 		return;
 	}
 
