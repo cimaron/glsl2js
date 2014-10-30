@@ -730,7 +730,7 @@ declaration:
 
 /* Line: 782 */
 function_prototype:
-			function_declarator ')'
+		  function_declarator ')'
 		;
 
 /* Line: 786 */
@@ -758,7 +758,8 @@ function_header:
 				$$.setLocation(@1);
 				$$.return_type = $1;
 				$$.identifier = $2;
-				yy.state.symbols.add_function($2, $1.specifier.type_name);
+				$$.entry = yy.state.symbols.add_function($2, $1.specifier.type_name);
+				$$.entry.Ast = $$;
 				yy.state.symbols.push_scope();
 			}
 		;
@@ -771,7 +772,7 @@ parameter_declarator:
 				$$.type = new AstFullySpecifiedType();
 				$$.type.setLocation(@1);
 				$$.type.specifier = $1;
-				$$.type.identifier = $2; }
+				$$.identifier = $2; }
 		| type_specifier any_identifier '[' constant_expression ']'
 		;
 

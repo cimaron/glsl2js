@@ -207,8 +207,8 @@ function AstFunction() {
 	this.return_type = null;
 	this.identifier = null;
 	this.parameters = [];
-	this.is_definition = false;
-	this.signature = null;	
+
+	this.entry = null;
 }
 
 util.inherits(AstFunction, AstNode);

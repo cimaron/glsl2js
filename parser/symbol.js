@@ -27,7 +27,7 @@ function SymbolTableEntry(name, typedef) {
 	this.name = name;
 	this.typedef = typedef;
 	this.type = null;
-	this.definition = null;
+	this.definition = [];	
 	this.depth = null;
 	this.qualifier = null;
 	this.out = name;
@@ -122,22 +122,11 @@ proto.add_type = function(name, t) {
 /**
  * 
  */
-proto.add_function = function(name, type, def) {
-
+proto.add_function = function(name, type) {
 	var entry;
-
-	//don't readd the exact same function definition
-	entry = this.get_function(name, def);
-	if (entry) {
-		return entry;
-	}
 
 	entry = new SymbolTableEntry(name, SymbolTableEntry.typedef.func);
 	entry.type = type;
-
-	if (def) {
-		entry.definition = def;
-	}
 
 	return this._add_entry(entry);
 };
@@ -221,7 +210,7 @@ proto.get_entry = function(name, typedef, def) {
 	t = this.table[name] || [];
 	for (i = 0; i < t.length; i++) {
 		entry = t[i];
-		if (entry.typedef === typedef /*&& (typedef !== SymbolTableEntry.typedef.func || this._match_definition(def, entry.definition))*/) {
+		if (entry.typedef === typedef && (typedef !== SymbolTableEntry.typedef.func || def.join(',') === entry.definition.join(','))) {
 			return entry;
 		}
 	}

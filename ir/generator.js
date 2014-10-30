@@ -44,8 +44,8 @@ glsl.generate = function(state) {
 		}
 
 		state.symbols.add_variable("<returned>", irs.getTemp());
-		main = state.symbols.get_function('main', 'void');
-		main.Ast.ir(state, irs);
+		main = state.symbols.get_function('main', ['void']);
+		main.Ast.body.ir(state, irs);
 
 	} catch (e) {
 
@@ -170,18 +170,11 @@ AstDeclaratorList.prototype.ir = function(state, irs) {
  * @param   object   irs     IR representation
  */
 AstFunctionDefinition.prototype.ir = function(state, irs) {
-	var symbol;
-
-	if (this.is_definition) {
-		//enter definition into symbol table?
-		return;
-	}
 
 	//handle function proto
 	this.proto_type.ir(state, irs);
 
-	symbol = state.symbols.get_function(this.proto_type.identifier);
-	symbol.Ast = this.body;
+	this.proto_type.entry.Ast = this;
 };
 
 
@@ -192,18 +185,11 @@ AstFunctionDefinition.prototype.ir = function(state, irs) {
  * @param   object   irs     IR representation
  */
 AstFunction.prototype.ir = function(state, irs) {
-	var i, name, param, entry;
-
-	//generate
-	name = this.identifier;
-	entry = state.symbols.get_function(name);
+	var i;
 
 	//generate param list
 	for (i = 0; i < this.parameters.length; i++) {
-		param = this.parameters[i];
-		if (param.is_void || !param.identifier) {
-			break;
-		}
+		this.entry.definition.push(this.parameters[i].type.specifier.type_name);
 	}
 };
 
@@ -656,7 +642,7 @@ AstExpression.prototype.ir_incdec = function(state, irs) {
  * @param   object   irs     IR representation
  */
 AstFunctionExpression.prototype.ir = function(state, irs) {
-	var name, entry, ret_entry, retd_entry, call_types, operands;
+	var i, e, name, entry, ret_entry, retd_entry, call_types, operands, param, proto, loc;
 
 	if (this.cons) {
 		return this.ir_constructor(state, irs);
@@ -667,18 +653,14 @@ AstFunctionExpression.prototype.ir = function(state, irs) {
 	operands = [];
 	call_types = [];
 	
-	/*
-	var i, se;
-
 	for (i = 0; i < this.expressions.length; i++) {
 
-		se = this.expressions[i];
-		se.ir(state, irs);
+		e = this.expressions[i];
+		e.ir(state, irs);
 
-		call_types.push(se.Type);
-		operands.push(se.Dest);
+		call_types.push(e.Type);
+		operands.push(e.Dest);
 	}
-	*/
 
 	entry = state.symbols.get_function(name, call_types);
 	if (!entry) {
@@ -701,6 +683,25 @@ AstFunctionExpression.prototype.ir = function(state, irs) {
 		//Rebuild inline function from AST
 		state.symbols.push_scope();
 
+		//Enter vars into local symbol table
+		proto = entry.Ast.proto_type;
+		for (i = 0; i < proto.parameters.length; i++) {
+			param = proto.parameters[i];
+			loc = state.symbols.add_variable(param.identifier, param.type.specifier.type_name);
+			loc.out = irs.getTemp();
+			//Add MOV operation from called param to local param
+			
+			//Piggy-back off assignment generation
+			lhs = new AstNode();
+			lhs.setLocation(this.getLocation());
+			lhs.Type = loc.type;
+			lhs.Dest = loc.out;
+
+			assign = new AstExpression('=', lhs, this.expressions[i]);
+			assign.setLocation(this.getLocation());
+			assign.ir_assign(state, irs, false);
+		}
+
 		//Create a return entry for the new call scope
 		ret_entry = state.symbols.add_variable("<return>", this.Type);
 		ret_entry.out = this.Dest;
@@ -708,7 +709,7 @@ AstFunctionExpression.prototype.ir = function(state, irs) {
 		retd_entry = state.symbols.add_variable("<returned>", "bool");
 		retd_entry.out = irs.getTemp();
 
-		entry.Ast.ir(state, irs);
+		entry.Ast.body.ir(state, irs);
 
 		state.symbols.pop_scope();
 	}
