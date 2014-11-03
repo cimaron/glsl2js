@@ -119,9 +119,9 @@ var ast_operators = [
 
 var ast_precision = {
 	none : 0,
-	high : 1,
-	medium : 2,
-	low : 3
+	highp : 1,
+	mediump : 2,
+	lowp : 3
 };
 
 
