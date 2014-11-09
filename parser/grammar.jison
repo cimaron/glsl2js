@@ -1015,11 +1015,11 @@ basic_type_specifier_nonarray:
 /* Line: 1374 */
 precision_qualifier:
 		  'HIGHP' {
-				$$ = ast_precision.high; }
+				$$ = ast_precision.highp; }
 		| 'MEDIUMP' {
-				$$ = ast_precision.medium; }
+				$$ = ast_precision.mediump; }
 		| 'LOWP' {
-				$$ = ast_precision.low; }
+				$$ = ast_precision.lowp; }
 		;
 
 /* Line: 1407 */
