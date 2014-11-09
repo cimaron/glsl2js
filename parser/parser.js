@@ -19,20 +19,30 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * GLSL Parser Class
+ */
+function GlslParser() {
+	
+	//Jison Global
+	this.jison = parser;
+}
+
+var proto = GlslParser.prototype;
 
 /**
- * Jison parser compatibility
+ * Parse Program
  */
-glsl.parse = function(state) {
+proto.parse = function(state) {
 	var result;
 
-	parser.yy =  {
+	this.jison.yy =  {
 		test : 1,
 		state : state
 	};
 
 	try {
-		parser.parse(state.getTranslationUnit());
+		this.jison.parse(state.getTranslationUnit());
 	} catch(e) {
 		state.addError(e.message, e.lineNumber, e.columnNumber);
 		return false;
@@ -40,4 +50,40 @@ glsl.parse = function(state) {
 
 	return true;
 };
-	
+
+glsl.parser = new GlslParser();
+
+
+
+/**
+ * External Parse
+ *
+ * @param   string   src        Source code
+ * @param   object   options    Compilation options
+ *
+ * @return  object
+ */
+glsl.parse = function(src, options) {
+	var state,
+		result,
+		irs
+		;
+
+	state = new GlslState(options);
+	state.setSource(src);
+
+	//Preprocess
+	result = this.preprocessor.process(state);
+
+	//Parse into AST
+	if (result) {
+		result = this.parser.parse(state);
+	}
+
+	if (result) {
+		state.status = true;	
+	}
+
+	return state;
+};
+

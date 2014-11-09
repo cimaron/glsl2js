@@ -35,7 +35,7 @@ var glsl = {
 
 		//Parse into AST
 		if (result) {
-			result = this.parse(state);
+			result = this.parser.parse(state);
 		}
 
 		//Generate IR
