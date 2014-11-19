@@ -26,6 +26,7 @@ function GlslParser() {
 	
 	//Jison Global
 	this.jison = parser;
+	this.jison.lexer = lexer;
 }
 
 var proto = GlslParser.prototype;

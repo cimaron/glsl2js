@@ -24,6 +24,7 @@ var del = require('del'),
 	concat = require('gulp-concat'),
 	include = require('gulp-include'),
 	jison = require('gulp-jison'),
+	jisonlex = require('gulp-jison-lex'),
 	jshint = require('gulp-jshint'),
 	rename = require('gulp-rename'),
 	uglify = require('gulp-uglify')
@@ -36,6 +37,15 @@ gulp.task('clean', function(cb) {
 /**
  * Component Tasks
  */
+gulp.task('jison-lex', function() {
+	return gulp.src('parser/*.jisonlex')
+		.pipe(jisonlex({
+			outFile : 'lexer.js'
+		}))
+		//.pipe(rename('lexer.js'))
+		.pipe(gulp.dest('build'))
+});
+
 gulp.task('jison', function() {
 	return gulp.src('parser/*.jison')
 		.pipe(jison({ moduleType: 'commonjs' }))
@@ -43,7 +53,7 @@ gulp.task('jison', function() {
 		.pipe(gulp.dest('build'))
 });
 
-gulp.task('_parser', ['jison'], function() {
+gulp.task('_parser', ['jison', 'jison-lex'], function() {
 	return gulp.src([
 		'preprocessor/preprocessor.js',
 		'preprocessor/comments.js',
@@ -52,8 +62,8 @@ gulp.task('_parser', ['jison'], function() {
 		'parser/ast.js',
 		'ir/builtin.js',
 		'build/grammar.js',
-		'parser/parser.js',
-		'parser/lexer.js'
+		'build/lexer.js',
+		'parser/parser.js'
 		])
 		.pipe(concat('parser.js'))
 		.pipe(gulp.dest('build'))
