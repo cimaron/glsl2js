@@ -191,35 +191,35 @@ HASH		^{SPC}#{SPC}
 "|="		return '|=';
 "-="		return '-=';
 
-[0-9]+\.[0-9]+([eE][+-]?[0-9]+)?[fF]?	{
+\-?[0-9]+\.[0-9]+([eE][+-]?[0-9]+)?[fF]?	{
 			    this.yylval = parseFloat(yytext);
 			    return 'FLOATCONSTANT';
 			}
-\.[0-9]+([eE][+-]?[0-9]+)?[fF]?		{
+\-?\.[0-9]+([eE][+-]?[0-9]+)?[fF]?		{
 				this.yylval = parseFloat(yytext);
 				return 'FLOATCONSTANT';
 			}
-[0-9]+\.([eE][+-]?[0-9]+)?[fF]?		{
+\-?[0-9]+\.([eE][+-]?[0-9]+)?[fF]?		{
 			    this.yylval = parseFloat(yytext);
 			    return 'FLOATCONSTANT';
 			}
-[0-9]+[eE][+-]?[0-9]+[fF]?		{
+\-?[0-9]+[eE][+-]?[0-9]+[fF]?		{
 			    this.yylval = parseFloat(yytext);
 			    return 'FLOATCONSTANT';
 			}
-[0-9]+[fF]		{
+\-?[0-9]+[fF]		{
 			    this.yylval = parseFloat(yytext);
 			    return 'FLOATCONSTANT';
 			}
-"0"[xX][0-9a-fA-F]+	{
+\-?0[xX][0-9a-fA-F]+	{
 			    this.yylval = parseInt(yytext + 2, 16);
 			    return 'INTCONSTANT';
 			}
-"0"[0-7]*		{
+\-?0[0-7]*		{
 			    this.yylval = parseInt(yytext, 8);
 			    return 'INTCONSTANT';
 			}
-[1-9][0-9]*	{
+\-?[1-9][0-9]*	{
 				this.yylval = parseInt(yytext);
 				return 'INTCONSTANT';
 			}
@@ -497,7 +497,7 @@ method_call_header:
 	;
 
 /* Grammar Note: Constructors look like functions, but lexical analysis recognized most of them as
-   keywords. They are now recognized through “type_specifier�?.
+   keywords. They are now recognized through “type_specifier”.
 */
 
 	/* Grammar Note: No traditional style type casts. */
