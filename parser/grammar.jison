@@ -221,7 +221,7 @@ method_call_header:
 	;
 
 /* Grammar Note: Constructors look like functions, but lexical analysis recognized most of them as
-   keywords. They are now recognized through â€œtype_specifierâ€?.
+   keywords. They are now recognized through "type_specifier".
 */
 
 	/* Grammar Note: No traditional style type casts. */
