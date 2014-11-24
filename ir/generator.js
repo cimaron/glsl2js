@@ -297,14 +297,19 @@ AstExpression.prototype.ir_op = function(state, irs) {
 			this.ir_assign(state, irs);
 			break;
 
-		//case 'POS':
+		case 'POS':
+			//useless
+			this.Dest = se[0].Dest;
+			this.Type = se[0].Type;
+			break;
+
 		case 'NEG':
-			if (se[0].Dest[0] != '-') {
-				e.Dest = "-" + se[0].Dest;	
+			if (se[0].Dest.substring(0, 1) != '-') {
+				this.Dest = "-" + se[0].Dest;	
 			} else {
-				e.Dest = se[0].Dest.substring(1);	
+				this.Dest = se[0].Dest.substring(1);	
 			}
-			e.Type = se[0].Type;
+			this.Type = se[0].Type;
 			break;
 
 		//Arithmetic

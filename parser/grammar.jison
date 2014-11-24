@@ -245,8 +245,10 @@ unary_expression:
 	/* Grammar Note: No '*' or '&' unary ops. Pointers are not supported. */
 /* Line: 570 */
 unary_operator:
-		  '+'
-		| '-'
+		  '+' {
+				$$ = 'POS'; }
+		| '-' {
+				$$ = 'NEG'; }
 		| '!'
 		| '~'
 		;

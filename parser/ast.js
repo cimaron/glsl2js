@@ -297,8 +297,17 @@ proto.toString = function() {
 			break;
 
 		case 'POS':
+			output = util.format("+%s", this.subexpressions[0]);
+			break;
 		case 'NEG':
+			output = util.format("-%s", this.subexpressions[0]);			
+			break;
+
+		case '~':
 		case '!':
+			output = util.format("%s%s", this.oper, this.subexpressions[0]);			
+			break;
+
 		case '++x':
 		case '--x':
 			output = util.format("%s%s", this.oper.replace('x', ''), this.subexpressions[0]);
