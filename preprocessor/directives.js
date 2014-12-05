@@ -67,7 +67,6 @@ Preprocessor.modules.directives = {
 		}
 
 		lmatches = raw.split(/\s+/);
-		console.log(line, lmatches);	
 		
 		try {
 
@@ -119,7 +118,7 @@ Preprocessor.modules.directives = {
 		if (matches.length != 2) {
 			throw new Error("Syntax error in #undef");
 		}
-console.log("undef", matches);
+
 		delete this.state.defines[matches[1]];
 	}
 
