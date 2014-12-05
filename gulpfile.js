@@ -57,6 +57,7 @@ gulp.task('_parser', ['jison', 'jison-lex'], function() {
 	return gulp.src([
 		'preprocessor/preprocessor.js',
 		'preprocessor/comments.js',
+		'preprocessor/directives.js',
 		'parser/type.js',
 		'parser/symbol.js',
 		'parser/ast.js',
