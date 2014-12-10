@@ -24,6 +24,8 @@ Preprocessor.modules.directives = {
 	state : {
 		lines : [],
 		defines : {
+		},
+		extensions : {
 		}
 	},
 
@@ -77,6 +79,11 @@ Preprocessor.modules.directives = {
 				return "";
 			}
 
+			if (lmatches[0] === 'extension') {
+				this.extension(line, lmatches);
+				return "";
+			}
+
 			if (lmatches[0] === 'undef') {
 				this.undef(line, lmatches);
 				return "";
@@ -113,6 +120,15 @@ Preprocessor.modules.directives = {
 		}
 
 		this.state.defines[matches[1]] = matches[2] || "";		
+	},
+
+	extension : function(line, matches) {
+
+		if (matches.length <= 1 || matches.length >= 5) {
+			throw new Error("Syntax error in #extension");
+		}
+
+		this.state.extensions[matches[1]] = matches[3] || "";
 	},
 
 	undef : function(line, matches) {

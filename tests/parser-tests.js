@@ -48,6 +48,16 @@ describe( 'Regression Parser Tests', function() {
         ].join('\n') );
         expect( parsed.directives.defines.DEF ).to.equal( '0' );
     });
-    
+
+    it( 'Parses #extension without error', function() {
+        var parsed = parseFragment([
+            '#extension GL_OES_standard_derivatives : enable',
+            'void main() {',
+                'gl_FragColor = 1.0;',
+            '}'
+        ].join('\n') );
+        expect( parsed.directives.extensions.GL_OES_standard_derivatives ).to.contain( 'enable' );
+    });
+
 });
 
