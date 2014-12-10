@@ -27,7 +27,7 @@ Preprocessor.modules.directives = {
 		}
 	},
 
-	process : function(src) {
+	process : function(src, state) {
 		var i, l;
 		
 		this.state.lines = src.split("\n");
@@ -45,6 +45,8 @@ Preprocessor.modules.directives = {
 			this.state.lines[i] = this.processLine(this.state.lines[i], i);
 			i++;
 		}
+
+		state.directives = this.state;
 
 		return this.state.lines.join("\n");
 	},
@@ -74,7 +76,7 @@ Preprocessor.modules.directives = {
 				this.define(line, lmatches);
 				return "";
 			}
-			
+
 			if (lmatches[0] === 'undef') {
 				this.undef(line, lmatches);
 				return "";

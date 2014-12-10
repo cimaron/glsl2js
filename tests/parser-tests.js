@@ -39,5 +39,15 @@ describe( 'Regression Parser Tests', function() {
         expect( parsed.ast.toString() ).to.contain( 'a - 1.0' );
     });
 
+    it( 'Parses #define without error', function() {
+        var parsed = parseFragment([
+            '#define DEF 0',
+            'void main() {',
+                'gl_FragColor = 1.0;',
+            '}'
+        ].join('\n') );
+        expect( parsed.directives.defines.DEF ).to.equal( '0' );
+    });
+    
 });
 

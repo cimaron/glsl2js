@@ -37,7 +37,7 @@ proto.process = function(state) {
 	for (m in Preprocessor.modules) {
 
 		try {
-			out = Preprocessor.modules[m].process(out);
+			out = Preprocessor.modules[m].process(out, state);
 		} catch (e) {
 			state.addError(e.message, e.lineNumber, e.columnNumber);
 			return false;
