@@ -25,5 +25,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 	this.glsl = glsl;
 
+	if (typeof module !== 'undefined') {
+		module.exports = glsl;
+	}
+
 }());
 
