@@ -189,7 +189,7 @@ proto.toString = function() {
 			}
 		}
 		
-		return util.format("precision %s %s;", prec, this.type_name);
+		return util.format("precision %s %s;\n", prec, this.type_name);
 	}
 	
 	return (this.type_specifier === types.struct ? this.structure : this.type_name)
