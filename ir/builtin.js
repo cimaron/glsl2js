@@ -171,7 +171,12 @@ var builtin = {
 			"vec4,vec4:float" : ["DP4 %1.x %2 %3"]
 			},			
         "max": {
+			"int,int:int" : ["MAX %1.x %2.x %3.x"],
 			"float,float:float" : ["MAX %1.x %2.x %3.x"]
+			},
+        "min": {
+			"int,int:int" : ["MIN %1.x %2.x %3.x"],
+			"float,float:float" : ["MIN %1.x %2.x %3.x"]
 			},
         "normalize": {
 			"vec3:vec3" : [

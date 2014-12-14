@@ -59,6 +59,7 @@ GlslProgramJavascript.translation_table = {
 	'IF'  : 'if (%1.x) {',
 	'MAD' : '%1.* = (%2.* * %3.*) + %4.*;',
 	'MAX' : '%1.* = Math.max(%2.*, %3.*)',
+	'MIN' : '%1.* = Math.min(%2.*, %3.*)',
 	'MOV' : '%1.* = %2.*;',
 	'MUL' : '%1.* = %2.* * %3.*;',
 	'OR'  : '%1.* = %2.* | %3.*',
