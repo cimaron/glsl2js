@@ -246,9 +246,17 @@ Ir.prototype.build = function(code, oprds) {
 
 		//For each operand
 		for (j = 0; j < IrInstruction.operands.length; j++) {		
+			
 			o = IrInstruction.operands[j];
 			oprd = ir[o];
-			if (oprd && (n = oprd.name.match(/%(\d)/))) {
+			
+			if (!oprd) {
+				break;
+			}
+			
+			n = oprd.name.match(/%(\d)/);
+
+			if (n) {
 				n = parseInt(n[1]);
 				ir[o] = new IrOperand(oprds[n - 1].toString());
 				ir[o].addOffset(oprd.address);

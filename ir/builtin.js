@@ -67,7 +67,46 @@ var builtin = {
 			"vec4,vec4:vec4" : ["ADD %1 %2 %3"]
 			},
 		"<" : {
-			"float,float:float" : ["SLT %1.x %2.x %3.x"]
+			"int,int:bool" : ["SLT %1.x %2.x %3.x"],
+			"float,float:bool" : ["SLT %1.x %2.x %3.x"]
+			},
+		">" : {
+			"int,int:bool" : ["SGT %1.x %2.x %3.x"],
+			"float,float:bool" : ["SGT %1.x %2.x %3.x"]
+			},
+		"<=" : {
+			"int,int:bool" : ["SLE %1.x %2.x %3.x"],
+			"float,float:bool" : ["SLE %1.x %2.x %3.x"]
+			},
+		">=" : {
+			"int,int:bool" : ["SGE %1.x %2.x %3.x"],
+			"float,float:bool" : ["SGE %1.x %2.x %3.x"]
+			},
+		"==" : {
+			"int,int:bool" : ["SEQ %1.x %2.x %3.x"],
+			"float,float:bool" : ["SEQ %1.x %2.x %3.x"]
+			},
+		"!=" : {
+			"int,int:bool" : ["SNE %1.x %2.x %3.x"],
+			"float,float:bool" : ["SNE %1.x %2.x %3.x"]
+			},
+		"&&" : {
+			"bool,bool:bool" : [
+				"AND %1.x %2.x %3.x",
+				"AND %1.x %1.x 1"
+				]
+			},
+		"^^" : {
+			"bool,bool:bool" : [
+				"XOR %1.x %2.x %3.x",
+				"AND %1.x %1.x 1"
+				]
+			},
+		"||" : {
+			"bool,bool:bool" : [
+				"OR %1.x %2.x %3.x",
+				"AND %1.x, %1.x, 1"
+				]
 			},
 		"*" : {
 			"int,int:int" : ["MUL %1.x %2.x %3.x"],
