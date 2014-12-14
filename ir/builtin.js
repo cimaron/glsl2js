@@ -105,7 +105,7 @@ var builtin = {
 		"||" : {
 			"bool,bool:bool" : [
 				"OR %1.x %2.x %3.x",
-				"AND %1.x, %1.x, 1"
+				"AND %1.x %1.x 1"
 				]
 			},
 		"*" : {
