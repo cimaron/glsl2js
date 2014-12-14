@@ -122,11 +122,15 @@ proto.add_type = function(name, t) {
 /**
  * 
  */
-proto.add_function = function(name, type) {
+proto.add_function = function(name, type, def) {
 	var entry;
 
 	entry = new SymbolTableEntry(name, SymbolTableEntry.typedef.func);
 	entry.type = type;
+
+	if (def) {
+		entry.definition = def;
+	}
 
 	return this._add_entry(entry);
 };
