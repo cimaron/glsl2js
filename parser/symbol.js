@@ -210,7 +210,7 @@ proto.get_entry = function(name, typedef, def) {
 	t = this.table[name] || [];
 	for (i = 0; i < t.length; i++) {
 		entry = t[i];
-		if (entry.typedef === typedef && (typedef !== SymbolTableEntry.typedef.func || def.join(',') === entry.definition.join(','))) {
+		if (entry.typedef === typedef && (typedef !== SymbolTableEntry.typedef.func || (def && def.join(',') === entry.definition.join(',')))) {
 			return entry;
 		}
 	}
