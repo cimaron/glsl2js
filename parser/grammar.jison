@@ -894,7 +894,7 @@ selection_rest_statement:
 				$$.then_statement = $1;
 				$$.else_statement = $3; }
 		| statement %prec THEN  {
-				$$.then_statement = $2; }
+				$$.then_statement = $1; }
 		;
 
 /* Line: 1604 */
