@@ -208,11 +208,31 @@ proto.get_entry = function(name, typedef, def) {
 	var t, i, entry;
 	
 	t = this.table[name] || [];
+	
 	for (i = 0; i < t.length; i++) {
+		
 		entry = t[i];
-		if (entry.typedef === typedef && (typedef !== SymbolTableEntry.typedef.func || def.join(',') === entry.definition.join(','))) {
+		
+		//Not type of variable we're looking for
+		if (entry.typedef !== typedef) {
+			continue;	
+		}
+		
+		//Normal variable
+		if (typedef !== SymbolTableEntry.typedef.func) {
 			return entry;
 		}
+
+		//Match any function definition
+		if (!def) {
+			return entry;
+		}
+		
+		//Match specific function definition
+		if (def.join(',') === entry.definition.join(',')) {
+			return entry;
+		}
+
 	}
 	
 	return null;
