@@ -941,15 +941,21 @@ for_rest_statement:
 
 /* Line: 1682 */
 jump_statement:
-		  'CONTINUE' ';'
-		| 'BREAK' ';'
+		'CONTINUE' ';' {
+			$$ = new AstJumpStatement(ast_jump_modes._continue);
+			$$.setLocation(@1); }
+		| 'BREAK' ';' {
+			$$ = new AstJumpStatement(ast_jump_modes._break);
+			$$.setLocation(@1); }
 		| 'RETURN' ';' {
 			$$ = new AstJumpStatement(ast_jump_modes._return);
 			$$.setLocation(@1); }
 		| 'RETURN' expression ';' {
 			$$ = new AstJumpStatement(ast_jump_modes._return, $2);
 			$$.setLocation(@1); }			
-		| 'DISCARD' ';' /* Fragment shader only.*/
+		| 'DISCARD' ';' { /* Fragment shader only.*/
+			$$ = new AstJumpStatement(ast_jump_modes._discard);
+			$$.setLocation(@1); }
 		;
 
 /* Line: 1715 */
