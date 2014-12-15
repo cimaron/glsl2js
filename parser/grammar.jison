@@ -484,6 +484,17 @@ function_header:
 				$$.setLocation(@1);
 				$$.return_type = $1;
 				$$.identifier = $2;
+				
+				//Check for duplicates
+				if ($2 == 'main') {
+					if (yy.state.symbols.get_function($2)) {
+						var e = new Error("Cannot define main() more than once");
+						e.lineNumber = @1.first_line;
+						e.columnNumber = @1.first_column;
+						throw e;
+					}
+				}
+
 				$$.entry = yy.state.symbols.add_function($2, $1.specifier.type_name);
 				$$.entry.Ast = $$;
 				yy.state.symbols.push_scope();

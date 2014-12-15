@@ -31,9 +31,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE		 OR OTHER DEALINGS IN THE SOFTWARE.
 glsl.generate = function(state) {
 	var irs,
 	    ast,
-	    i
+	    i,
+		main
 		;
-	
+
 	irs = new Ir(state.options.target);
 	ast = state.getAst();
 	
@@ -44,7 +45,23 @@ glsl.generate = function(state) {
 		}
 
 		state.symbols.add_variable("<returned>", irs.getTemp());
-		main = state.symbols.get_function('main', ['void']);
+		
+		main = state.symbols.get_function('main');
+
+		//Accept main, but warn if params not void
+		if (main.definition.join(",") !== "void") {
+			state.addWarning("main() should take no parameters");
+		}
+
+		if (main.type != 'void') {
+			state.addWarning("main() should be type void");	
+		}
+
+		if (!main) {
+			state.addError("main() is not defined");
+			return false;
+		}
+
 		main.Ast.body.ir(state, irs);
 
 	} catch (e) {
