@@ -115,6 +115,7 @@ var builtin = {
 			"float,vec3:vec3" : ["MUL %1.xyz %2.x %3.xyz"],
 			"float,vec4:vec4" : ["MUL %1 %2.x %3"],
 			"vec3,float:vec3" : ["MUL %1.xyz %2.xyz %3.x"],
+			"vec2,vec2:vec2" : ["MUL %1.xy %2.xy %3.xy"],
 			"vec3,vec3:vec3" : ["MUL %1.xyz %2.xyz %3.xyz"],
 			"vec4,vec4:vec4" : ["MUL %1 %2 %3"],
 			"mat3,vec3:vec3" : [
