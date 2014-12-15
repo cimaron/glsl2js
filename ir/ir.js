@@ -226,7 +226,7 @@ Ir.prototype.build = function(code, oprds) {
 		if (oprd.swizzle) {
 
 			//need a new temp to move the swizzle so our code pattern works
-			new_swz = swizzles[0].substring(0, oprd.swizzle.length);
+			new_swz = Ir.swizzles[0].substring(0, oprd.swizzle.length);
 
 			if (oprd.swizzle != new_swz) {
 				dest = this.getTemp();
