@@ -44,6 +44,7 @@ function GlslState(options) {
 	this.ir = null;
 
 	this.errors = [];
+	this.warnings = [];
 }
 
 proto = GlslState.prototype = {};
@@ -117,9 +118,34 @@ proto.getStatus = function() {
 proto.addError = function(msg, line, column) {
 	var err;
 
+	if (!line && !column) {
+		this.errors.push(msg);
+		return;
+	}
+
 	err = util.format("%s at line %s, column %s", msg, line, column);
 
 	this.errors.push(err);
+};
+
+/**
+ * Add warning to state
+ *
+ * @param   string   msg      Message
+ * @param   int      line     Message
+ * @param   int      column   Message
+ */
+proto.addWarning = function(msg, line, column) {
+	var warn;
+
+	if (!line && !column) {
+		this.warnings.push(msg);
+		return;
+	}
+
+	warn = util.format("%s at line %s, column %s", msg, line, column);
+
+	this.warnings.push(warn);
 };
 
 /**
@@ -129,5 +155,14 @@ proto.addError = function(msg, line, column) {
  */
 proto.getErrors = function() {
 	return this.errors;
+};
+
+/**
+ * Get compile errors
+ *
+ * @return  mixed
+ */
+proto.getWarnings = function() {
+	return this.warnings;
 };
 

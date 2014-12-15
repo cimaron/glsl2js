@@ -70,12 +70,12 @@ glsl.generate = function(state) {
  *
  * @return  string
  */
-function ir_error(message, node) {
+AstNode.prototype.ir_error = function(message) {
 	var e = new IrError();
 
-	if (node && node.location) {
-		e.lineNumber = node.location.first_line;
-		e.columnNumber = node.location.first_column;
+	if (this.location) {
+		e.lineNumber = this.location.first_line;
+		e.columnNumber = this.location.first_column;
 		e.message = message;
 	}
 
@@ -86,7 +86,7 @@ function ir_error(message, node) {
  * Default IR
  */
 AstNode.prototype.irx = function(state, irs) {
-	ir_error(util.format("Can't generate ir for %s", this.typeOf()), this);
+	this.ir_error(util.format("Can't generate ir for %s", this.typeOf()));
 };
 
 /**
@@ -100,7 +100,7 @@ AstTypeSpecifier.prototype.ir = function(state, irs) {
 		return;
 	}
 
-//	ir_error("Cannot generate type specifier", this);
+//	this.ir_error("Cannot generate type specifier");
 };
 
 
@@ -156,7 +156,7 @@ AstDeclaratorList.prototype.ir = function(state, irs) {
 
 		} else {
 			if (constant) {
-				ir_error("Declaring const without initialier", decl);
+				decl.ir_error("Declaring const without initialier");
 			}
 		}
 	}
@@ -270,7 +270,7 @@ AstExpression.prototype.ir = function(state, irs) {
 		return;
 	}
 
-	ir_error("Could not translate unknown expression type", e);
+	this.ir_error("Could not translate unknown expression type");
 };
 
 
@@ -378,7 +378,7 @@ AstExpression.prototype.ir_op = function(state, irs) {
 			break;
 		*/
 		default:
-			ir_error(util.format("Could not translate unknown expression %s (%s)", this, this.oper), this);
+			this.ir_error(util.format("Could not translate unknown expression %s (%s)", this, this.oper));
 	}
 };
 
@@ -402,7 +402,7 @@ AstExpression.prototype.ir_assign = function(state, irs, skip_comment/*, local*/
 	this.Type = lhs.Type;
 
 	if (lhs.Entry && lhs.Entry.constant) {
-		ir_error(util.format("Cannot assign value to constant %s", lhs.Dest), this);	
+		this.ir_error(util.format("Cannot assign value to constant %s", lhs.Dest));
 	}
 
 	if (!skip_comment) {
@@ -456,11 +456,11 @@ AstExpression.prototype.ir_cast = function(state, irs, type) {
 			this.Type = type;
 		} else {
 			//@todo: generate cast instructions
-			ir_error(util.format("Could not assign value of type %s to %s", this.Type, type), this);
+			this.ir_error(util.format("Could not assign value of type %s to %s", this.Type, type));
 		}
 
 	} else {
-		ir_error(util.format("Could not assign value of type %s to %s", this.Type, type), this);
+		this.ir_error(util.format("Could not assign value of type %s to %s", this.Type, type));
 	}
 };
 
@@ -485,7 +485,7 @@ AstExpression.prototype.ir_simple = function(state, irs) {
 		entry = state.symbols.get_variable(name) || state.symbols.get_function(name);
 
 		if (!entry /*|| !entry.type*/) {
-			ir_error(util.format("%s is undefined", name), this);
+			this.ir_error(util.format("%s is undefined", name));
 		}
 
 		this.Type = entry.type;
@@ -516,7 +516,7 @@ AstExpression.prototype.ir_simple = function(state, irs) {
 		return;
 	}
 
-	ir_error("Cannot translate unknown simple expression type", this);
+	this.ir_error("Cannot translate unknown simple expression type");
 };
 
 /**
@@ -529,7 +529,7 @@ AstExpression.prototype.ir_generate = function(state, irs, len, arith) {
 	var table, se, types, dest, i, j, def, match, comment, cnst;
 
 	if (!(table = builtin.oper[this.oper])) {
-		ir_error(util.format("Could not generate operation %s", this.oper), this);
+		this.ir_error(util.format("Could not generate operation %s", this.oper));
 	}
 
 	se = this.subexpressions;
@@ -569,7 +569,7 @@ AstExpression.prototype.ir_generate = function(state, irs, len, arith) {
 	}
 
 	if (!match) {
-		ir_error(util.format("Could not apply operation %s to %s", this.oper, types.join(", ")), this);
+		this.ir_error(util.format("Could not apply operation %s to %s", this.oper, types.join(", ")));
 	}
 
 	if (len <= 4) {
@@ -607,7 +607,7 @@ AstExpression.prototype.ir_incdec = function(state, irs) {
 
 	//Type check: base type must be int or float
 	if (type.base != 'int' && type.base != 'float') {
-		ir_error(util.format("Could not apply operation %s to %s", op, se.Type), this);
+		this.ir_error(util.format("Could not apply operation %s to %s", op, se.Type));
 	}
 
 	this.Type = se.Type;
@@ -669,7 +669,7 @@ AstFunctionExpression.prototype.ir = function(state, irs) {
 
 	entry = state.symbols.get_function(name, call_types);
 	if (!entry) {
-		ir_error(util.format("Function %s(%s) is not defined", name, call_types.join(", ")), this);
+		this.ir_error(util.format("Function %s(%s) is not defined", name, call_types.join(", ")));
 	}
 
 	this.Type = entry.type;
@@ -752,7 +752,7 @@ AstFunctionExpression.prototype.ir_constructor = function(state, irs) {
 		if (si == 0) {
 
 			if (!expr) {
-				ir_error("Not enough parameters to constructor", e);				
+				this.ir_error("Not enough parameters to constructor");
 			}
 
 			expr.ir(state, irs);
@@ -824,7 +824,7 @@ AstExpression.prototype.ir_field = function(state, irs) {
 		this.Type = base;
 
 		if (field.length > 4 || !this.Type) {
-			ir_error(util.format("Invalid field selection %s.%s", se, field), this);
+			this.ir_error(util.format("Invalid field selection %s.%s", se, field));
 		}
 
 		this.Dest = util.format("%s.%s", se.Dest, Ir.normalizeSwizzle(field));
@@ -849,7 +849,7 @@ AstSelectionStatement.prototype.ir = function(state, irs) {
 	ir = new IrInstruction('IF', this.condition.Dest);
 
 	if (['bool', 'int', 'float'].indexOf(this.condition.Type) === -1) {
-		ir_error("boolean expression expected");			
+		this.ir_error("boolean expression expected");
 	}
 
 	if (!ir.d.swizzle) {
