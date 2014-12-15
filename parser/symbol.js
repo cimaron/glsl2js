@@ -213,6 +213,11 @@ proto.get_entry = function(name, typedef, def) {
 	
 	t = this.table[name] || [];
 	
+	//Look for 'void' instead of empty definition list
+	if (def && def.length == 0) {
+		def = ["void"];	
+	}
+
 	for (i = 0; i < t.length; i++) {
 		
 		entry = t[i];

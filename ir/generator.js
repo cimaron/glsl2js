@@ -187,6 +187,10 @@ AstFunctionDefinition.prototype.ir = function(state, irs) {
 AstFunction.prototype.ir = function(state, irs) {
 	var i;
 
+	if (this.parameters.length == 0) {
+		this.entry.definition.push('void');
+	}
+
 	//generate param list
 	for (i = 0; i < this.parameters.length; i++) {
 		this.entry.definition.push(this.parameters[i].type.specifier.type_name);
