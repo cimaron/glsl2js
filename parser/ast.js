@@ -400,7 +400,8 @@ proto = AstDeclaration.prototype;
  */
 proto.toString = function() {
 	return this.identifier
-	    + (this.initializer ? util.format(" = %s", this.initializer) : "")
+		+ (this.is_array ? util.format("[%s]", this.array_size === undefined ? '' : this.array_size) : '')
+		+ (this.initializer ? util.format(" = %s", this.initializer) : "")
 		;
 };
 
