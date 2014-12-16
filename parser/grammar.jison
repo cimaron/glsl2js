@@ -567,7 +567,12 @@ init_declarator_list:
 		| init_declarator_list ',' any_identifier '[' constant_expression ']'
 		| init_declarator_list ',' any_identifier '[' ']' '=' initializer
 		| init_declarator_list ',' any_identifier '[' constant_expression ']' '=' initializer
-		| init_declarator_list ',' any_identifier '=' initializer
+		| init_declarator_list ',' any_identifier '=' initializer {
+			var decl = new AstDeclaration($3, false, null, $5);
+			decl.setLocation(@1);
+			$$ = $1;
+			$$.declarations.push(decl);
+			/*yy.state.symbols.add_variable($3);*/ }
 		;
 
 /* Grammar Note: No 'enum', or 'typedef'. */
