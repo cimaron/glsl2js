@@ -119,8 +119,13 @@ primary_expression:
 
 /* Line: 373 */
 postfix_expression:
-		  primary_expression
-		| postfix_expression '[' integer_expression ']'
+		  primary_expression {
+				$$ = new AstExpression($1);
+				$$.setLocation(@1); }
+		| postfix_expression '[' integer_expression ']' {
+				$$ = new AstExpression('[]', $1, $3);
+				$$.setLocation(@1); }
+		}
 		| function_call
 		| postfix_expression '.' any_identifier {
 				$$ = new AstExpression('.', $1);
