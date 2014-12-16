@@ -557,7 +557,12 @@ parameter_type_specifier:
 /* Line: 905 */
 init_declarator_list:
 		  single_declaration
-		| init_declarator_list ',' any_identifier
+		| init_declarator_list ',' any_identifier {
+			var decl = new AstDeclaration($3, false);
+			decl.setLocation(@1);
+			$$ = $1;
+			$$.declarations.push(decl);
+			/*yy.state.symbols.add_variable($3);*/ }
 		| init_declarator_list ',' any_identifier '[' ']'
 		| init_declarator_list ',' any_identifier '[' constant_expression ']'
 		| init_declarator_list ',' any_identifier '[' ']' '=' initializer

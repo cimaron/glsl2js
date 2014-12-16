@@ -425,7 +425,7 @@ proto = AstDeclaratorList.prototype;
  * @return  string
  */
 proto.toString = function() {
-	return util.format("%s %s;\n", this.type || "invariant ", this.declarations.join(""));
+	return util.format("%s %s;\n", this.type || "invariant ", this.declarations.join(", "));
 };
 
 
