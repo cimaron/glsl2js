@@ -128,57 +128,89 @@ AstTypeSpecifier.prototype.ir = function(state, irs) {
  * @param   object   irs     IR representation
  */
 AstDeclaratorList.prototype.ir = function(state, irs) {
-	var type, qualifier, i, decl, name, entry, constant, assign, lhs;
+	var i;
 
-	type = this.type;
+	for (i = 0; i < this.declarations.length; i++) {
+		this.declarations[i].ir(state, irs, this.type);
+	}
+};
+
+/**
+ * Constructs a declaration
+ *
+ * @param   object   state   GLSL state
+ * @param   object   irs     IR representation
+ */
+AstDeclaration.prototype.ir = function(state, irs, type) {
+	var qualifier, name, entry, constant, assign, lhs, size;
 
 	if (type.qualifier) {
 		qualifier = type.qualifier;
 	}
 
-	for (i = 0; i < this.declarations.length; i++) {
+	name = this.identifier;
 
-		decl = this.declarations[i];
-		name = decl.identifier;
+	//add symbol table entry
+	entry = state.symbols.add_variable(name);
+	entry.type = type.specifier.type_name;
+	entry.qualifier = qualifier;
 
-		//add symbol table entry
-		entry = state.symbols.add_variable(name);
-		entry.type = type.specifier.type_name;
-		entry.qualifier = qualifier;
-
-		if (qualifier.indexOf('uniform') !== -1) {
-			entry.out = irs.getUniform(entry);
-		} else if (qualifier.indexOf('attribute') !== -1) {
-			entry.out = irs.getAttribute(entry);
-		} else if (qualifier.indexOf('varying') !== -1) {
-			entry.out = irs.getVarying(entry);
-		} else {
-			entry.out = irs.getTemp();
-		}
-
-		constant = (qualifier === 'const');
-
-		if (decl.initializer) {
-
-			//@todo: generate constants at compile time (this may be able to be taken care of in the generator)
-			if (constant) {
-				//entry.constant = decl.initializer.Dest;
-			} else {
-				lhs = new AstExpression('ident');
-				lhs.primary_expression.identifier = name;
-				assign = new AstExpression('=', lhs, decl.initializer);
-				assign.setLocation(decl.location);
-				assign.ir(state, irs);
-			}
-
-		} else {
-			if (constant) {
-				decl.ir_error("Declaring const without initialier");
-			}
-		}
+	if (qualifier.indexOf('uniform') !== -1) {
+		entry.out = irs.getUniform(entry);
+	} else if (qualifier.indexOf('attribute') !== -1) {
+		entry.out = irs.getAttribute(entry);
+	} else if (qualifier.indexOf('varying') !== -1) {
+		entry.out = irs.getVarying(entry);
+	} else {
+		entry.out = irs.getTemp();
 	}
-};
 
+	constant = (qualifier === 'const');
+
+	if (this.is_array) {
+		
+		this.array_size.ir(state, irs);
+
+		if (this.array_size.Type != 'int') {
+			this.ir_error("array size must be an integer");
+		}
+
+		if (!this.array_size.Const) {
+			this.ir_error("array size must be constant");
+		}
+
+		size = parseInt(this.array_size.Dest);
+
+		if (size < 1) {
+			this.ir_error("array size cannot be less than 1");
+		}
+
+		entry.size = size;
+
+		//Change the type of the entry so that expressions without indexing will fail
+		entry.base_type = entry.type;
+		entry.type += '[]';
+	}
+
+	if (this.initializer) {
+
+		//@todo: generate constants at compile time (this may be able to be taken care of in the generator)
+		if (constant) {
+			//entry.constant = this.initializer.Dest;
+		} else {
+			lhs = new AstExpression('ident');
+			lhs.primary_expression.identifier = name;
+			assign = new AstExpression('=', lhs, this.initializer);
+			assign.setLocation(this.location);
+			assign.ir(state, irs);
+		}
+
+	} else {
+		if (constant) {
+			this.ir_error("Declaring const without initialier");
+		}
+	}	
+};
 
 /**
  * Constructs a function definition block
@@ -681,28 +713,32 @@ AstExpression.prototype.ir_arr_index = function(state, irs) {
 	idx = this.subexpressions[1];
 	
 	entry = arr.Entry;
-	
+
 	//Ensure array index is integer
 	if (idx.Type != 'int') {
 		this.ir_error("array index out of bounds");
 	}
 
+	//@todo: Need to implement array indexing syntax for vector components
+	if (!entry.size) {
+		this.ir_error("cannot index a non-array value");	
+	}
+
 	//@todo: Need to implement array indexing for matrices
-	if (types[entry.type].slots > 1) {
+	if (types[entry.base_type].slots > 1) {
 		this.ir_error("array indexing for matrices not implemented yet");	
 	}
 
-	this.Type = arr.Type;
+	this.Type = entry.base_type;
 
 	//If constant index, we can do some additional error checking
 	if (idx.Const) {
 
 		cnst = parseInt(idx.Dest);
-		
-		if (cnst < 0) {
+
+		if (cnst < 0 || cnst >= entry.size) {
 			this.ir_error("array index out of bounds");	
 		}
-		//@todo: Check size for max bound
 
 		oprd = new IrOperand(arr.Dest);
 		oprd.index = cnst;

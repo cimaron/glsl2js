@@ -24,14 +24,33 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * SymbolTableEntry constructor
  */
 function SymbolTableEntry(name, typedef) {
-	this.name = name;
-	this.typedef = typedef;
-	this.type = null;
-	this.definition = [];	
+
 	this.depth = null;
+	this.typedef = typedef;
+
+	//Variable name
+	this.name = name;
+
+	//Type
+	this.type = null;
+
+	//Base type (if array)
+	this.base_type = null;
+
+	//Function definition
+	this.definition = [];	
+
+	//Qualifier
 	this.qualifier = null;
+
+	//IR name
 	this.out = name;
+	
+	//Constant value
 	this.constant = null;
+	
+	//Array size
+	this.size = null;
 
 	//Temp vars for IR generation
 	this.code = null;

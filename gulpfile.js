@@ -74,7 +74,6 @@ gulp.task('generator', function() {
 	return gulp.src([
 		'ir/generator.js',	
 		'ir/ir.js',
-		'ir/operand.js',
 		'ir/instruction.js',
 		'output/javascript/program.js',
 		'output/javascript/context.js',
