@@ -119,9 +119,7 @@ primary_expression:
 
 /* Line: 373 */
 postfix_expression:
-		  primary_expression {
-				$$ = new AstExpression($1);
-				$$.setLocation(@1); }
+		  primary_expression
 		| postfix_expression '[' integer_expression ']' {
 				$$ = new AstExpression('[]', $1, $3);
 				$$.setLocation(@1); }
@@ -569,7 +567,12 @@ init_declarator_list:
 			$$.declarations.push(decl);
 			/*yy.state.symbols.add_variable($3);*/ }
 		| init_declarator_list ',' any_identifier '[' ']'
-		| init_declarator_list ',' any_identifier '[' constant_expression ']'
+		| init_declarator_list ',' any_identifier '[' constant_expression ']' {
+			var decl = new AstDeclaration($3, true, $5);
+			decl.setLocation(@1);
+			$$ = $1;
+			$$.declarations.push(decl);
+			/*yy.state.symbols.add_variable($3);*/ }
 		| init_declarator_list ',' any_identifier '[' ']' '=' initializer
 		| init_declarator_list ',' any_identifier '[' constant_expression ']' '=' initializer
 		| init_declarator_list ',' any_identifier '=' initializer {

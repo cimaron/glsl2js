@@ -310,7 +310,7 @@ proto.buildComponents = function(opr, dest) {
 	}
 
 	out.name = opr.name + '_f32';
-	out.start = 4 * opr.address;
+	out.start = 4 * opr.address + 4 * opr.index;
 	out.components = [];
 	out.jstemp = [];
 

@@ -25,12 +25,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  * Represents a single assembly-like instruction
  */
-function IrInstruction(op, d, s1, s2, s3, gen) {
+function IrInstruction(op, d, s1, s2, s3) {
 	var args;
-
-	if (gen) {
-		d = IRS.getTemp();
-	}
 
 	this.str = null;
 	this.line = null;
@@ -143,6 +139,7 @@ function IrOperand(str, raw) {
 	this.swizzle = "";
 	this.number = "";
 	this.raw = "";
+	this.index = "";
 
 	if (raw) {
 		this.full = str;
@@ -175,8 +172,11 @@ IrOperand.prototype.parse = function(str) {
 	//name (include '%' for our code substitution rules)
 	regex += "([\\w%]+)";
 
-	//address
+	//number
 	regex += "(?:@(\\d+))?";
+
+	//index
+	regex += "(?:\\[(\\d+)\\])?";
 
 	//swizzle
 	regex += "(?:\\.([xyzw]+))?";
@@ -188,7 +188,8 @@ IrOperand.prototype.parse = function(str) {
 		this.neg = parts[1] || "";
 		this.name = parts[2];
 		this.address = parseInt(parts[3]) || 0;
-		this.swizzle = parts[4] || "";
+		this.index = parseInt(parts[4]) || 0;
+		this.swizzle = parts[5] || "";
 	} else {
 		if (parts = str.match(/^"(.*)"$/)) {
 			this.raw = parts[1];
@@ -223,7 +224,7 @@ IrOperand.prototype.toString = function() {
 	if (this.raw) {
 		str = this.raw;	
 	} else {
-		str = this.neg + this.name + ("@" + this.address) + (this.swizzle ? "." + this.swizzle : "");
+		str = this.neg + this.name + ("@" + this.address) + (this.index !== "" ? "[" + this.index + "]" : "") + (this.swizzle ? "." + this.swizzle : "");
 	}
 	
 	return str;

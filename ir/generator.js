@@ -325,12 +325,19 @@ AstExpression.prototype.ir_op = function(state, irs) {
 			break;
 
 		case 'NEG':
+
 			if (se[0].Dest.substring(0, 1) != '-') {
 				this.Dest = "-" + se[0].Dest;	
 			} else {
 				this.Dest = se[0].Dest.substring(1);	
 			}
+			
 			this.Type = se[0].Type;
+			
+			if (se[0].Const) {
+				this.Const = se[0].Const;	
+			}
+			
 			break;
 
 		//Arithmetic
@@ -389,6 +396,7 @@ AstExpression.prototype.ir_op = function(state, irs) {
 			break;
 		//case '.': break;
 		case '[]':
+			this.ir_arr_index(state, irs);
 			break;
 		/*
 		case 'VAR':
@@ -660,6 +668,54 @@ AstExpression.prototype.ir_incdec = function(state, irs) {
 
 };
 
+/**
+ * Constructs an array index expression
+ *
+ * @param   object   state   GLSL state
+ * @param   object   irs     IR representation
+ */
+AstExpression.prototype.ir_arr_index = function(state, irs) {
+	var arr, idx, entry, size, cnst, oprd;
+	
+	arr = this.subexpressions[0];
+	idx = this.subexpressions[1];
+	
+	entry = arr.Entry;
+	
+	//Ensure array index is integer
+	if (idx.Type != 'int') {
+		this.ir_error("array index out of bounds");
+	}
+
+	//@todo: Need to implement array indexing for matrices
+	if (types[entry.type].slots > 1) {
+		this.ir_error("array indexing for matrices not implemented yet");	
+	}
+
+	this.Type = arr.Type;
+
+	//If constant index, we can do some additional error checking
+	if (idx.Const) {
+
+		cnst = parseInt(idx.Dest);
+		
+		if (cnst < 0) {
+			this.ir_error("array index out of bounds");	
+		}
+		//@todo: Check size for max bound
+
+		oprd = new IrOperand(arr.Dest);
+		oprd.index = cnst;
+	
+		this.Dest = oprd.toString();
+
+	} else {
+
+		//@todo: variable indexing is permitted by spec, but behavior is undefined for out of bounds
+
+		this.ir_error("variable indexing not implemented yet");	
+	}
+};
 
 /**
  * Constructs a function expression
