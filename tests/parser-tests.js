@@ -59,5 +59,29 @@ describe( 'Regression Parser Tests', function() {
         expect( parsed.directives.extensions.GL_OES_standard_derivatives ).to.contain( 'enable' );
     });
 
+    it( 'Parses for loop', function() {
+        var parsed = parseFragment([
+            'void main() {',
+                'for (float f = 1.0 ; f <= 10.0 ; f++ ) {',
+                '    vec2 position;',
+                '}',
+            '}'
+        ].join('\n') );
+        expect( parsed.ast.toString() ).to.contain( 'for (float f = 1.0; f <= 10.0; f++)' );
+        expect( parsed.ast.toString() ).to.contain( 'vec2 position' );
+    });
+
+    it( 'Parses for loop with optional ', function() {
+        var parsed = parseFragment([
+            'void main() {',
+                'for (float f = 1.0 ; f <= 10.0 ;) {',
+                '    vec2 position;',
+                '}',
+            '}'
+        ].join('\n') );
+        expect( parsed.ast.toString() ).to.contain( 'for (float f = 1.0; f <= 10.0; )' );
+        expect( parsed.ast.toString() ).to.contain( 'vec2 position' );
+    });
+
 });
 
