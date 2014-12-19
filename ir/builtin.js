@@ -62,9 +62,83 @@ var builtin = {
 		"+" : {
 			"int,int:int" : ["ADD %1.x %2.x %3.x"],
 			"float,float:float" : ["ADD %1.x %2.x %3.x"],
+			"float,vec2:vec2" : ["ADD %1.xy %2.x %3.xy"],
+			"float,vec3:vec3" : ["ADD %1.xyz %2.x %3.xyz"],
+			"float,vec4:vec4" : ["ADD %1 %2.x %3"],
+			"vec2,float:vec2" : ["ADD %1.xy %2.xy %3.x"],
+			"vec3,float:vec3" : ["ADD %1.xyz %2.xyz %3.x"],
+			"vec4,float:vec4" : ["ADD %1 %2 %3.x"],
 			"vec2,vec2:vec2" : ["ADD %1.xy %2.xy %3.xy"],
 			"vec3,vec3:vec3" : ["ADD %1.xyz %2.xyz %3.xyz"],
 			"vec4,vec4:vec4" : ["ADD %1 %2 %3"]
+			},
+		"-" : {
+			"int,int:int" : ["SUB %1.x %2.x %3.x"],
+			"float,float:float" : ["SUB %1.x %2.x %3.x"],
+			"float,vec2:vec2" : ["SUB %1.xy %2.x %3.xy"],
+			"float,vec3:vec3" : ["SUB %1.xyz %2.x %3.xyz"],
+			"float,vec4:vec4" : ["SUB %1 %2.x %3"],
+			"vec2,float:vec2" : ["SUB %1.xy %2.xy %3.x"],
+			"vec3,float:vec3" : ["SUB %1.xyz %2.xyz %3.x"],
+			"vec4,float:vec4" : ["SUB %1 %2 %3.x"],
+			"vec2,vec2:vec2" : ["SUB %1.xy %2.xy %3.xy"],
+			"vec3,vec3:vec3" : ["SUB %1.xyz %2.xyz %3.xyz"],
+			"vec4,vec4:vec4" : ["SUB %1 %2 %3"]
+		},
+		"*" : {
+			"int,int:int" : ["MUL %1.x %2.x %3.x"],
+			"float,float:float" : ["MUL %1.x %2.x %3.x"],
+			"float,vec2:vec2" : ["MUL %1.xy %2.x %3.xy"],
+			"float,vec3:vec3" : ["MUL %1.xyz %2.x %3.xyz"],
+			"float,vec4:vec4" : ["MUL %1 %2.x %3"],
+			"vec2,float:vec2" : ["MUL %1.xy %2.xy %3.x"],
+			"vec3,float:vec3" : ["MUL %1.xyz %2.xyz %3.x"],
+			"vec4,float:vec4" : ["MUL %1 %2 %3.x"],
+			"vec2,vec2:vec2" : ["MUL %1.xy %2.xy %3.xy"],
+			"vec3,vec3:vec3" : ["MUL %1.xyz %2.xyz %3.xyz"],
+			"vec4,vec4:vec4" : ["MUL %1 %2 %3"],
+			"mat3,vec3:vec3" : [
+				"MUL %1.xyz %2.xyz %3.x",
+				"MAD %1.xyz %2@1.xyz %3.y %1",
+				"MAD %1.xyz %2@2.xyz %3.z %1"
+				],
+			"mat4,vec4:vec4" : [
+				"MUL %1 %2 %3.x",
+				"MAD %1 %2@1 %3.y %1",
+				"MAD %1 %2@2 %3.z %1",
+				"MAD %1 %2@3 %3.w %1"
+				],
+			"mat4,mat4:mat4" : [
+				"MUL %1 %2 %3.x",
+				"MAD %1 %2@1 %3.y %1",
+				"MAD %1 %2@2 %3.z %1",
+				"MAD %1 %2@3 %3.w %1",
+				"MUL %1@1 %2 %3@1.x",
+				"MAD %1@1 %2@1 %3@1.y %1@1",
+				"MAD %1@1 %2@2 %3@1.z %1@1",
+				"MAD %1@1 %2@3 %3@1.w %1@1",
+				"MUL %1@2 %2 %3@2.x",
+				"MAD %1@2 %2@1 %3@2.y %1@2",
+				"MAD %1@2 %2@2 %3@2.z %1@2",
+				"MAD %1@2 %2@3 %3@2.w %1@2",
+				"MUL %1@3 %2 %3@3.x",
+				"MAD %1@3 %2@1 %3@3.y %1@3",
+				"MAD %1@3 %2@2 %3@3.z %1@3",
+				"MAD %1@3 %2@3 %3@3.w %1@3"
+				]
+			},
+		"/" : {
+			"int,int:int" : ["DIV %1.x %2.x %3.x"],
+			"float,float:float" : ["DIV %1.x %2.x %3.x"],
+			"float,vec2:vec2" : ["DIV %1.xy %2.x %3.xy"],
+			"float,vec3:vec3" : ["DIV %1.xyz %2.x %3.xyz"],
+			"float,vec4:vec4" : ["DIV %1 %2.x %3"],
+			"vec2,float:vec2" : ["DIV %1.xy %2.xy %3.x"],
+			"vec3,float:vec3" : ["DIV %1.xyz %2.xyz %3.x"],
+			"vec4,float:vec4" : ["DIV %1 %2 %3.x"],
+			"vec2,vec2:vec2" : ["DIV %1.xy %2.xy %3.xy"],
+			"vec3,vec3:vec3" : ["DIV %1.xyz %2.xyz %3.xyz"],
+			"vec4,vec4:vec4" : ["DIV %1 %2 %3"]
 			},
 		"<" : {
 			"int,int:bool" : ["SLT %1.x %2.x %3.x"],
@@ -107,58 +181,7 @@ var builtin = {
 				"OR %1.x %2.x %3.x",
 				"AND %1.x %1.x 1"
 				]
-			},
-		"*" : {
-			"int,int:int" : ["MUL %1.x %2.x %3.x"],
-			"float,float:float" : ["MUL %1.x %2.x %3.x"],
-			"float,vec2:vec2" : ["MUL %1.xy %2.x %3.xy"],
-			"float,vec3:vec3" : ["MUL %1.xyz %2.x %3.xyz"],
-			"float,vec4:vec4" : ["MUL %1 %2.x %3"],
-			"vec3,float:vec3" : ["MUL %1.xyz %2.xyz %3.x"],
-			"vec2,vec2:vec2" : ["MUL %1.xy %2.xy %3.xy"],
-			"vec3,vec3:vec3" : ["MUL %1.xyz %2.xyz %3.xyz"],
-			"vec4,vec4:vec4" : ["MUL %1 %2 %3"],
-			"mat3,vec3:vec3" : [
-				"MUL %1.xyz %2.xyz %3.x",
-				"MAD %1.xyz %2@1.xyz %3.y %1",
-				"MAD %1.xyz %2@2.xyz %3.z %1"
-				],
-			"mat4,vec4:vec4" : [
-				"MUL %1 %2 %3.x",
-				"MAD %1 %2@1 %3.y %1",
-				"MAD %1 %2@2 %3.z %1",
-				"MAD %1 %2@3 %3.w %1"
-				],
-			"mat4,mat4:mat4" : [
-				"MUL %1 %2 %3.x",
-				"MAD %1 %2@1 %3.y %1",
-				"MAD %1 %2@2 %3.z %1",
-				"MAD %1 %2@3 %3.w %1",
-				"MUL %1@1 %2 %3@1.x",
-				"MAD %1@1 %2@1 %3@1.y %1@1",
-				"MAD %1@1 %2@2 %3@1.z %1@1",
-				"MAD %1@1 %2@3 %3@1.w %1@1",
-				"MUL %1@2 %2 %3@2.x",
-				"MAD %1@2 %2@1 %3@2.y %1@2",
-				"MAD %1@2 %2@2 %3@2.z %1@2",
-				"MAD %1@2 %2@3 %3@2.w %1@2",
-				"MUL %1@3 %2 %3@3.x",
-				"MAD %1@3 %2@1 %3@3.y %1@3",
-				"MAD %1@3 %2@2 %3@3.z %1@3",
-				"MAD %1@3 %2@3 %3@3.w %1@3"
-				]
-			},
-		"/" : {
-			"int,int:int" : ["DIV %1.x %2.x %3.x"],
-			"float,float:float" : ["DIV %1.x %2.x %3.x"]
-			},
-		"-" : {
-			"int,int:int" : ["SUB %1.x %2.x %3.x"],
-			"float,float:float" : ["SUB %1.x %2.x %3.x"],
-			"vec2,vec2:vec2" : ["SUB %1.xy %2.xy %3.xy"],
-			"vec3,vec3:vec3" : ["SUB %1.xyz %2.xyz %3.xyz"],
-			"vec4,vec4:vec4" : ["SUB %1 %2 %3"]
-		}
+			}
 	},
 
 	/**
@@ -168,17 +191,40 @@ var builtin = {
 	 */
 	func : {
 		"dot": {
+			"vec2,vec2:float" : ["DP2 %1.x %2.xy %3.xy"],
 			"vec3,vec3:float" : ["DP3 %1.x %2.xyz %3.xyz"],
 			"vec4,vec4:float" : ["DP4 %1.x %2 %3"]
-			},			
+			},
         "max": {
-			"int,int:int" : ["MAX %1.x %2.x %3.x"],
-			"float,float:float" : ["MAX %1.x %2.x %3.x"]
+			"float,float:float" : ["MAX %1.x %2.x %3.x"],
+			"vec2,float:vec2" : ["MAX %1.xy %2.xy %3.x"],
+			"vec3,float:vec3" : ["MAX %1.xyz %2.xyz %3.x"],
+			"vec4,float:vec4" : ["MAX %1 %2 %3.x"],
+			"vec2,vec2:vec2" : ["MAX %1.xy %2.xy %3.xy"],
+			"vec3,vec3:vec3" : ["MAX %1.xyz %2.xyz %3.xyz"],
+			"vec4,vec4:vec4" : ["MAX %1 %2 %3"]
 			},
         "min": {
-			"int,int:int" : ["MIN %1.x %2.x %3.x"],
-			"float,float:float" : ["MIN %1.x %2.x %3.x"]
+			"float,float:float" : ["MIN %1.x %2.x %3.x"],
+			"vec2,float:vec2" : ["MIN %1.xy %2.xy %3.x"],
+			"vec3,float:vec3" : ["MIN %1.xyz %2.xyz %3.x"],
+			"vec4,float:vec4" : ["MIN %1 %2 %3.x"],
+			"vec2,vec2:vec2" : ["MIN %1.xy %2.xy %3.xy"],
+			"vec3,vec3:vec3" : ["MIN %1.xyz %2.xyz %3.xyz"],
+			"vec4,vec4:vec4" : ["MIN %1 %2 %3"]
 			},
+		"floor": {
+			"float:float" : ["FLR %1.x %2.x"],
+			"vec2:vec2" : ["FLR %1.xy %2.xy"],
+			"vec3:vec3" : ["FLR %1.xyz %2.xyz"],
+			"vec4:vec4" : ["FLR %1 %2"],
+		},
+		"ceil": {
+			"float:float" : ["CEIL %1.x %2.x"],
+			"vec2:vec2" : ["CEIL %1.xy %2.xy"],
+			"vec3:vec3" : ["CEIL %1.xyz %2.xyz"],
+			"vec4:vec4" : ["CEIL %1 %2"],
+		},
         "normalize": {
 			"vec3:vec3" : [
 				"DP3 %1.x %2 %2",
