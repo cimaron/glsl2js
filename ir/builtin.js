@@ -190,11 +190,47 @@ var builtin = {
 	 * Denoted by function name, then by definition of param types to output type
 	 */
 	func : {
+		"abs": {
+			"float:float" : ["ABS %1.x %2.x"],
+			"vec2:vec2" : ["ABS %1.xy %2.xy"],
+			"vec3:vec3" : ["ABS %1.xyz %2.xyz"],
+			"vec4:vec4" : ["ABS %1 %2"],
+			},
 		"ceil": {
 			"float:float" : ["CEIL %1.x %2.x"],
 			"vec2:vec2" : ["CEIL %1.xy %2.xy"],
 			"vec3:vec3" : ["CEIL %1.xyz %2.xyz"],
 			"vec4:vec4" : ["CEIL %1 %2"],
+			},
+		"clamp": {
+			"float,float,float:float" : [
+				"MAX %1.x %2.x %3.x",
+				"MIN %1.x %1.x %4.x"
+				],
+			"vec2,float,float:vec2" : [
+				"MAX %1.xy %2.xy %3.x",
+				"MIN %1.xy %1.xy %4.x"
+				],
+			"vec3,float,float:vec3" : [
+				"MAX %1.xyz %2.xyz %3.x",
+				"MIN %1.xyz %1.xyz %4.x"
+				],
+			"vec4,float,float:vec4" : [
+				"MAX %1 %2 %3.x",
+				"MIN %1 %1 %4.x"
+				],
+			"vec2,vec2,vec2:vec2" : [
+				"MAX %1.xy %2.xy %3.xy",
+				"MIN %1.xy %1.xy %4.xy"
+				],
+			"vec3,vec3,vec3:vec3" : [
+				"MAX %1.xyz %2.xyz %3.xyz",
+				"MIN %1.xyz %1.xyz %4.xyz"
+				],
+			"vec4,vec4,vec4:vec4" : [
+				"MAX %1 %2 %3",
+				"MIN %1 %1 %4"
+				]
 			},
 		"cos": {
 			"float:float" : ["COS %1.x %2.x"],
@@ -219,6 +255,12 @@ var builtin = {
 			"vec3:vec3" : ["FLR %1.xyz %2.xyz"],
 			"vec4:vec4" : ["FLR %1 %2"],
 			},
+		"fract": {
+			"float:float" : ["FRC %1.x %2.x"],
+			"vec2:vec2" : ["FRC %1.xy %2.xy"],
+			"vec3:vec3" : ["FRC %1.xyz %2.xyz"],
+			"vec4:vec4" : ["FRC %1 %2"],
+			},
         "max": {
 			"float,float:float" : ["MAX %1.x %2.x %3.x"],
 			"vec2,float:vec2" : ["MAX %1.xy %2.xy %3.x"],
@@ -236,6 +278,45 @@ var builtin = {
 			"vec2,vec2:vec2" : ["MIN %1.xy %2.xy %3.xy"],
 			"vec3,vec3:vec3" : ["MIN %1.xyz %2.xyz %3.xyz"],
 			"vec4,vec4:vec4" : ["MIN %1 %2 %3"]
+			},
+        "mix": {
+			"float,float,float:float" : [
+				"MAD %1.x -%2.x %4.x %2.x",
+				"MAD %1.x %3.x %4.x %1.x"
+				],
+			"vec2,vec2,float:vec2" : [
+				"MAD %1.xy -%2.xy %4.x %2.xy",
+				"MAD %1.xy %3.xy %4.x %1.xy"
+				],
+			"vec3,vec3,float:vec3" : [
+				"MAD %1.xyz -%2.xyz %4.x %2.xyz",
+				"MAD %1.xyz %3.xyz %4.x %1.xyz"
+				],
+			"vec4,vec4,float:vec4" : [
+				"MAD %1 -%2 %4.x %2",
+				"MAD %1 %3 %4.x %1"
+				],
+			"vec2,vec2,vec2:vec2" : [
+				"MAD %1.xy -%2.xy %4.xy %2.xy",
+				"MAD %1.xy %3.xy %4.xy %1.xy"
+				],
+			"vec3,vec3,vec3:vec3" : [
+				"MAD %1.xyz -%2.xyz %4.xyz %2.xyz",
+				"MAD %1.xyz %3.xyz %4.xyz %1.xyz"
+				],
+			"vec4,vec4,vec4:vec4" : [
+				"MAD %1 -%2 %4 %2",
+				"MAD %1 %3 %4 %1"
+				]
+			},
+        "mod": {
+			"float,float:float" : ["MOD %1.x %2.x %3.x"],
+			"vec2,float:vec2" : ["MOD %1.xy %2.xy %3.x"],
+			"vec3,float:vec3" : ["MOD %1.xyz %2.xyz %3.x"],
+			"vec4,float:vec4" : ["MOD %1 %2 %3.x"],
+			"vec2,vec2:vec2" : ["MOD %1.xy %2.xy %3.xy"],
+			"vec3,vec3:vec3" : ["MOD %1.xyz %2.xyz %3.xyz"],
+			"vec4,vec4:vec4" : ["MOD %1 %2 %3"]
 			},
         "normalize": {
 			"vec3:vec3" : [
@@ -265,11 +346,42 @@ var builtin = {
 			"vec3:vec3" : ["MUL %1.xyz %2.xyz " + (Math.PI / 180)],
 			"vec4:vec4" : ["MUL %1 %2 " + (Math.PI / 180)],
 			},
+		"sign": {
+			"float:float" : [
+				"SGT %t1.x %2.x 0",
+				"SLT %t1.y %2.x 0",
+				"ADD %1.x %t1.x -%t1.y"
+				],
+			"vec2:vec2" : [
+				"SGT %t1.xy %2.xy 0",
+				"SLT %t1.zw %2.zw 0",
+				"ADD %1.xy %t1.xy -%t1.zw"
+				],
+			"vec3:vec3" : [
+				"SGT %t1.xyz %2.xyz 0",
+				"SLT %t2.xyz %2.xyz 0",
+				"ADD %1.xyz %t1.xyz -%t2.xyz"
+				],
+			"vec4:vec4" : [
+				"SGT %t1 %2 0",
+				"SLT %t2 %2 0",
+				"ADD %1 %t1 -%t2"
+				],
+			},
 		"sin": {
 			"float:float" : ["SIN %1.x %2.x"],
 			"vec2:vec2" : ["SIN %1.xy %2.xy"],
 			"vec3:vec3" : ["SIN %1.xyz %2.xyz"],
 			"vec4:vec4" : ["SIN %1 %2"],
+			},
+		"step": {
+			"float,float:float" : ["SGE %1.x %3.x %2.x"],
+			"float,vec2:vec2" : ["SGE %1.xy %3.x %2.xy"],
+			"float,vec3:vec3" : ["SGE %1.xyz %3.x %2.xyz"],
+			"float,vec4:vec4" : ["SGE %1 %3.x %2"],
+			"vec2,vec2:vec2" : ["SGE %1.xy %3.xy %2.xy"],
+			"vec3,vec3:vec3" : ["SGE %1.xyz %3.xyz %2.xyz"],
+			"vec4,vec4:vec4" : ["SGE %1 %3 %3"],
 			},
 		"tan": {
 			"float:float" : ["TAN %1.x %2.x"],

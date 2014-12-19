@@ -216,7 +216,7 @@ Ir.prototype.toString = function() {
  * @param   array       List of operands
  */
 Ir.prototype.build = function(code, oprds) {
-	var dest, i, j, o, n, oprd, ir, new_swz;
+	var dest, i, j, k, o, n, t, oprd, ir, new_swz, temps;
 
 	//Parse operands
 	for (i = 0; i < oprds.length; i++) {
@@ -239,6 +239,8 @@ Ir.prototype.build = function(code, oprds) {
 		oprds[i] = oprd;
 	}
 
+	temps = [];
+
 	//Merge template with passed operands
 	for (i = 0; i < code.length; i++) {
 
@@ -253,15 +255,33 @@ Ir.prototype.build = function(code, oprds) {
 			if (!oprd) {
 				break;
 			}
-			
-			n = oprd.name.match(/%(\d)/);
 
+			//Normal src/dest
+			n = oprd.name.match(/%(\d+)/);
 			if (n) {
 				n = parseInt(n[1]);
 				ir[o] = new IrOperand(oprds[n - 1].toString());
 				ir[o].addOffset(oprd.address);
 				ir[o].swizzle = oprd.swizzle;
+				ir[o].neg = oprd.neg;
 			}
+			
+			//Need temp
+			t = oprd.name.match(/%t(\d+)/);
+			if (t) {
+
+				//Build up enough temps
+				t = parseInt(t[1]);
+				while (temps.length < t) {
+					temps.push(this.getTemp());	
+				}
+				t = temps[t - 1].split('@');
+				
+				oprd.name = t[0];
+				oprd.address = t[1];
+				oprd.full = oprd.toString();
+			}
+			
 		}
 
 		this.push(ir);
