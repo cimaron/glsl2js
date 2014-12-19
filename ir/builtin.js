@@ -190,10 +190,34 @@ var builtin = {
 	 * Denoted by function name, then by definition of param types to output type
 	 */
 	func : {
+		"ceil": {
+			"float:float" : ["CEIL %1.x %2.x"],
+			"vec2:vec2" : ["CEIL %1.xy %2.xy"],
+			"vec3:vec3" : ["CEIL %1.xyz %2.xyz"],
+			"vec4:vec4" : ["CEIL %1 %2"],
+			},
+		"cos": {
+			"float:float" : ["COS %1.x %2.x"],
+			"vec2:vec2" : ["COS %1.xy %2.xy"],
+			"vec3:vec3" : ["COS %1.xyz %2.xyz"],
+			"vec4:vec4" : ["COS %1 %2"],
+			},
+		"degrees": {
+			"float:float" : ["MUL %1.x %2.x " + (180 / Math.PI)],
+			"vec2:vec2" : ["MUL %1.xy %2.xy " + (180 / Math.PI)],
+			"vec3:vec3" : ["MUL %1.xyz %2.xyz " + (180 / Math.PI)],
+			"vec4:vec4" : ["MUL %1 %2 " + (180 / Math.PI)]
+			},
 		"dot": {
 			"vec2,vec2:float" : ["DP2 %1.x %2.xy %3.xy"],
 			"vec3,vec3:float" : ["DP3 %1.x %2.xyz %3.xyz"],
 			"vec4,vec4:float" : ["DP4 %1.x %2 %3"]
+			},
+		"floor": {
+			"float:float" : ["FLR %1.x %2.x"],
+			"vec2:vec2" : ["FLR %1.xy %2.xy"],
+			"vec3:vec3" : ["FLR %1.xyz %2.xyz"],
+			"vec4:vec4" : ["FLR %1 %2"],
 			},
         "max": {
 			"float,float:float" : ["MAX %1.x %2.x %3.x"],
@@ -213,18 +237,6 @@ var builtin = {
 			"vec3,vec3:vec3" : ["MIN %1.xyz %2.xyz %3.xyz"],
 			"vec4,vec4:vec4" : ["MIN %1 %2 %3"]
 			},
-		"floor": {
-			"float:float" : ["FLR %1.x %2.x"],
-			"vec2:vec2" : ["FLR %1.xy %2.xy"],
-			"vec3:vec3" : ["FLR %1.xyz %2.xyz"],
-			"vec4:vec4" : ["FLR %1 %2"],
-		},
-		"ceil": {
-			"float:float" : ["CEIL %1.x %2.x"],
-			"vec2:vec2" : ["CEIL %1.xy %2.xy"],
-			"vec3:vec3" : ["CEIL %1.xyz %2.xyz"],
-			"vec4:vec4" : ["CEIL %1 %2"],
-		},
         "normalize": {
 			"vec3:vec3" : [
 				"DP3 %1.x %2 %2",
@@ -247,9 +259,27 @@ var builtin = {
 				"MAD %1.xyz -%1 2.0 %2"
 				]
 			},
+		"radians": {
+			"float:float" : ["MUL %1.x %2.x " + (Math.PI / 180)],
+			"vec2:vec2" : ["MUL %1.xy %2.xy " + (Math.PI / 180)],
+			"vec3:vec3" : ["MUL %1.xyz %2.xyz " + (Math.PI / 180)],
+			"vec4:vec4" : ["MUL %1 %2 " + (Math.PI / 180)],
+			},
+		"sin": {
+			"float:float" : ["SIN %1.x %2.x"],
+			"vec2:vec2" : ["SIN %1.xy %2.xy"],
+			"vec3:vec3" : ["SIN %1.xyz %2.xyz"],
+			"vec4:vec4" : ["SIN %1 %2"],
+			},
+		"tan": {
+			"float:float" : ["TAN %1.x %2.x"],
+			"vec2:vec2" : ["TAN %1.xy %2.xy"],
+			"vec3:vec3" : ["TAN %1.xyz %2.xyz"],
+			"vec4:vec4" : ["TAN %1 %2"],
+			},
 		"texture2D": {
 			"sampler2D,vec2:vec4" : ["TEX %1 %3 %2 \"2D\""]
-		}
+			}
 	}
 };
 
