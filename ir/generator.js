@@ -843,12 +843,9 @@ AstFunctionExpression.prototype.ir = function(state, irs) {
  * @param   object   irs     IR representation
  */
 AstFunctionExpression.prototype.ir_constructor = function(state, irs) {
-	var type, dest_i, si, sei, ses, d, s, expr, comment, comment_text;
+	var type, comment_text, comment, i, expr, src_expr, src_i, src_c, oprd, dest;
 
 	type = this.subexpressions[0].type_specifier;
-
-	si = 0;
-	sei = 0;
 
 	this.Type = type.name;
 	this.Dest = irs.getTemp();
@@ -857,45 +854,54 @@ AstFunctionExpression.prototype.ir_constructor = function(state, irs) {
 	comment = new IrComment("", this.location);
 	irs.push(comment);
 
-	for (dest_i = 0; dest_i < type.size; dest_i++) {
+	//Prepare components
+	for (i = 0; i < this.expressions.length; i++) {
+		
+		expr = this.expressions[i];
 
-		expr = this.expressions[sei];
-
-		//build next subexpression
-		if (si == 0) {
-
-			if (!expr) {
-				this.ir_error("Not enough parameters to constructor");
-			}
-
-			expr.ir(state, irs);
-			ses = types[expr.Type].size;
-
+		if (expr) {
+			expr.ir(state, irs);	
 			comment_text.push(expr.Dest);
 		}
+		
+	}
 
-		//need to add support for > vec4
+	src_expr = this.expressions[0];
+	src_i = 0; //Source expression index
+	src_c = 0; //Component of source expression
 
-		//compute destination
-		d = util.format("%s.%s", this.Dest, Ir.swizzles[0][dest_i]);
+	for (dest_i = 0; dest_i < type.size; dest_i++) {
 
-		//compute source
-		s = new IrOperand(expr.Dest);
-
-		//expression was to just get the identifier, so add the appropriate swizzle,
-		//else, either a number, or the correct swizzle already been set
-
-		if (!s.swizzle) {
-			s.swizzle = Ir.swizzles[0][si];			
+		if (!src_expr) {
+			this.ir_error("Not enough parameters to constructor");				
 		}
 
-		irs.push(new IrInstruction('MOV', d, s.toString()));
+		//@todo: need to add support for > vec4
+		if (types[src_expr.Type].size > 4) {
+			this.ir_error("Matrix components not implemented yet");	
+		}
 
-		//used up all components in current expression, move on to the next one
-		si++;
-		if (si >= ses) {
-			si = 0;
-			sei++;
+		//compute destination
+		dest = util.format("%s.%s", this.Dest, Ir.swizzles[0][dest_i]);
+
+		//compute source
+		oprd = new IrOperand(src_expr.Dest);
+
+		if (!oprd.swizzle) {
+			oprd.swizzle = Ir.swizzles[0][src_c];
+		}
+
+		irs.push(new IrInstruction('MOV', dest, oprd.toString()));
+
+		src_c++;
+
+		//Get next source component expression
+		if (src_c >= types[src_expr.Type].size) {
+			if (this.expressions[src_i + 1]) {
+				src_i++;
+				src_expr = this.expressions[src_i];
+				src_c = 0;
+			}
 		}
 
 	}
