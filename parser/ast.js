@@ -409,12 +409,13 @@ proto.toString = function() {
 /**
  * AST Declarator List Class
  */
-function AstDeclaratorList(type) {
+function AstDeclaratorList(type, inline) {
 	AstNode.apply(this);
 
 	this.type = type;
 	this.declarations = [];
 	this.invariant = 0;
+    this.inline = inline;
 }
 
 util.inherits(AstDeclaratorList, AstNode);
@@ -426,7 +427,7 @@ proto = AstDeclaratorList.prototype;
  * @return  string
  */
 proto.toString = function() {
-	return util.format("%s %s;\n", this.type || "invariant ", this.declarations.join(", "));
+	return util.format("%s %s;%s", this.type || "invariant ", this.declarations.join(", "), this.inline ? "": "\n");
 };
 
 
@@ -477,7 +478,7 @@ proto = AstExpressionStatement.prototype;
  * @return  string
  */
 proto.toString = function() {
-	return util.format("%s;\n", this.expression || "");
+	return util.format("%s;%s", this.expression || "", this.inline ? "" : "\n");
 };
 
 
@@ -586,7 +587,48 @@ proto.toString = function() {
 	return util.format("%s(%s)", this.subexpressions[0], this.expressions.join(", "));
 };
 
+/**
+ * AST Selection Statement Class
+ */
+function AstForStatement(init, for_rest, body) {
+	AstNode.apply(this);
+	this.init = init;
+	this.for_rest = for_rest;
+	this.body = body;
+}
 
+util.inherits(AstForStatement, AstNode);
+proto = AstForStatement.prototype;
+
+/**
+ * Return string representation of node
+ *
+ * @return  string
+ */
+proto.toString = function() {
+	return util.format("for (%s %s) %s", this.init, this.for_rest, this.body);
+};
+
+/**
+ * AST Condition Class
+ */
+function AstConditionStatement(init, optional) {
+	AstNode.apply(this);
+	this.init = init;
+	this.optional = optional;
+}
+
+util.inherits(AstConditionStatement, AstNode);
+proto = AstConditionStatement.prototype;
+
+/**
+ * Return string representation of node
+ *
+ * @return  string
+ */
+proto.toString = function() {
+	return util.format("%s; %s", this.init, this.optional || "");
+};
 
 /**
  * AST Selection Statement Class
@@ -698,6 +740,8 @@ glsl.ast = {
 	FunctionExpression : AstFunctionExpression,
 	SelectionStatement : AstSelectionStatement,
 	StructSpecifier : AstStructSpecifier,
-	JumpStatement : AstJumpStatement	
+	JumpStatement : AstJumpStatement,
+	ForStatement : AstForStatement,
+	ConditionStatement : AstConditionStatement
 };
 
