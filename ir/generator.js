@@ -265,14 +265,14 @@ AstCompoundStatement.prototype.ir = function(state, irs) {
 
 		stmt.ir(state, irs);
 
-		if (stmt instanceof AstJumpStatement && stmt.mode == ast_jump_modes._return) {
+		if (stmt instanceof AstJumpStatement && stmt.mode == 'return') {
 			
 			//Returning from block, set return status, and skip following instructions in block (unreachable)
 			retd_entry.Passed = true;
 			irs.push(new IrInstruction("MOV", retd_entry.out + ".x", "1.0"));
 			break;
 		}
-
+		
 		if (!maybe_returned && retd_entry.Passed) {
 			maybe_returned = true;
 			irs.push(new IrInstruction("IF", retd_entry.out + ".x"));
@@ -1000,30 +1000,47 @@ AstSelectionStatement.prototype.ir = function(state, irs) {
 AstJumpStatement.prototype.ir = function(state, irs) {
 	var ret, ret_entry, assign, lhs;
 
-	ret = this.opt_return_value;
+	switch (this.mode) {
 
-	if (ret) {
+		case 'return':
+
+			ret = this.opt_return_value;
 		
-		ret.ir(state, irs);
-
-		ret_entry = state.symbols.get_variable('<return>');
-
-		//@todo: need to compare return value type with current function type
-
-		irs.push(new IrComment(util.format("return => %s %s", ret.Dest, ret.Type), this.location));
-
-		//Piggy-back off assignment generation
-		lhs = new AstExpression('<return>');
-		lhs.setLocation(this.getLocation());
-		lhs.Type = ret.Type;
-		lhs.Dest = ret_entry.out;
-
-		assign = new AstExpression('=', lhs, ret);
-		assign.setLocation(this.getLocation());
-		assign.ir_assign(state, irs, true);
-
-	} else {
-		irs.push(new IrComment("return", this.location));
+			if (ret) {
+				
+				ret.ir(state, irs);
+		
+				ret_entry = state.symbols.get_variable('<return>');
+		
+				//@todo: need to compare return value type with current function type
+		
+				irs.push(new IrComment(util.format("return => %s %s", ret.Dest, ret.Type), this.location));
+		
+				//Piggy-back off assignment generation
+				lhs = new AstExpression('<return>');
+				lhs.setLocation(this.getLocation());
+				lhs.Type = ret.Type;
+				lhs.Dest = ret_entry.out;
+		
+				assign = new AstExpression('=', lhs, ret);
+				assign.setLocation(this.getLocation());
+				assign.ir_assign(state, irs, true);
+		
+			} else {
+				irs.push(new IrComment("return", this.location));
+			}
+		
+			break;
+		
+		case 'debugger':
+			
+			irs.push(new IrComment("debugger", this.location));
+			irs.push(new IrInstruction("DBGR"));
+			break;
+		
+		default:
+			//@todo:
 	}
-	
+
 };
+

@@ -596,31 +596,37 @@ single_declaration:
 				$$.setLocation(@1); }
 		| fully_specified_type any_identifier {
 				var decl = new AstDeclaration($2, false);
+				decl.setLocation(@2);
 				$$ = new AstDeclaratorList($1);
 				$$.setLocation(@1);
 				$$.declarations.push(decl); }
 		| fully_specified_type any_identifier '[' ']' {
 				var decl = new AstDeclaration($2, true);
+				decl.setLocation(@2);
 				$$ = new AstDeclaratorList($1);
 				$$.setLocation(@1);
 				$$.declarations.push(decl); }
 		| fully_specified_type any_identifier '[' constant_expression ']' {
 				var decl = new AstDeclaration($2, true, $4);
+				decl.setLocation(@2);
 				$$ = new AstDeclaratorList($1);
 				$$.setLocation(@1);
 				$$.declarations.push(decl); }
 		| fully_specified_type any_identifier '[' ']' '=' initializer {
 				var decl = new AstDeclaration($2, true, null, $6);
+				decl.setLocation(@2);
 				$$ = new AstDeclaratorList($1);
 				$$.setLocation(@1);
 				$$.declarations.push(decl); }
 		| fully_specified_type any_identifier '[' constant_expression ']' '=' initializer {
 				var decl = new AstDeclaration($2, true, $4, $7);
+				decl.setLocation(@2);
 				$$ = new AstDeclaratorList($1);
 				$$.setLocation(@1);
 				$$.declarations.push(decl); }
 		| fully_specified_type any_identifier '=' initializer {
 				var decl = new AstDeclaration($2, false, null, $4);
+				decl.setLocation(@2);
 				$$ = new AstDeclaratorList($1);
 				$$.setLocation(@1);
 				$$.declarations.push(decl); }
@@ -971,19 +977,22 @@ for_rest_statement:
 /* Line: 1682 */
 jump_statement:
 		'CONTINUE' ';' {
-			$$ = new AstJumpStatement(ast_jump_modes._continue);
+			$$ = new AstJumpStatement('continue');
 			$$.setLocation(@1); }
 		| 'BREAK' ';' {
-			$$ = new AstJumpStatement(ast_jump_modes._break);
+			$$ = new AstJumpStatement('break');
 			$$.setLocation(@1); }
 		| 'RETURN' ';' {
-			$$ = new AstJumpStatement(ast_jump_modes._return);
+			$$ = new AstJumpStatement('return');
 			$$.setLocation(@1); }
 		| 'RETURN' expression ';' {
-			$$ = new AstJumpStatement(ast_jump_modes._return, $2);
+			$$ = new AstJumpStatement('return', $2);
 			$$.setLocation(@1); }			
 		| 'DISCARD' ';' { /* Fragment shader only.*/
-			$$ = new AstJumpStatement(ast_jump_modes._discard);
+			$$ = new AstJumpStatement('discard');
+			$$.setLocation(@1); }
+		| 'DEBUGGER' ';' {
+			$$ = new AstJumpStatement('debugger');
 			$$.setLocation(@1); }
 		;
 

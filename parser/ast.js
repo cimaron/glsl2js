@@ -643,17 +643,10 @@ function AstJumpStatement(mode, return_value) {
 	this.opt_return_value = null;
 	this.mode = mode;
 
-	if (mode === ast_jump_modes._return) {
+	if (mode === 'return') {
 		this.opt_return_value = return_value;	
 	}	
 }
-
-var ast_jump_modes = {
-	_continue : 0,
-	_break : 1,
-	_return : 2,
-	_discard : 3
-};
 
 util.inherits(AstJumpStatement, AstNode);
 proto = AstJumpStatement.prototype;
@@ -667,17 +660,14 @@ proto.toString = function() {
 	
 	switch (this.mode) {
 
-		case ast_jump_modes._continue:
-			return "continue;\n";
+		case 'continue':
+		case 'break':
+		case 'discard':
+		case 'debugger':
+			return this.mode + ";\n";
 		
-		case ast_jump_modes._break:
-			return "break;\n";
-		
-		case ast_jump_modes._return:
+		case 'return':
 			return util.format("return%s;\n", this.opt_return_value ? " " + this.opt_return_value : "");
-		
-		case ast_jump_modes._discard:
-			return "discard;\n";
 	}
 };
 
