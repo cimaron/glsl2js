@@ -37,6 +37,7 @@ Preprocessor.modules.directives = {
 			__LINE__ : '0',
 			__VERSION__ : '300'
 		};
+		this.state.cond_stack = [];
 
 		i = 0;
 		l = this.state.lines.length;
@@ -50,10 +51,14 @@ Preprocessor.modules.directives = {
 	},
 	
 	processLine : function(line, i) {
-		var d, matches, raw, e, sub;
+		var d, matches, raw, e, sub, cond;
 
 		matches = line.match(/^([ \t]*)#(.*)$/);
 		if (!matches) {
+
+			if (this.state.cond_stack.length != 0 && !this.state.cond_stack.slice(-1)[0]) {
+				return "";
+			}
 
 			line = this.processDefines(line, i);
 
@@ -70,14 +75,14 @@ Preprocessor.modules.directives = {
 		
 		try {
 
-			if (lmatches[0] === 'define') {
-				this.define(line, lmatches);
-				return "";
-			}
-			
-			if (lmatches[0] === 'undef') {
-				this.undef(line, lmatches);
-				return "";
+			switch (lmatches[0]) {
+				
+				case 'define':
+				case 'undef':
+				case 'ifdef':
+				case 'endif':
+					this[lmatches[0]](line, lmatches);
+					return "";
 			}
 
 			throw new Error("Invalid directive");
@@ -120,6 +125,24 @@ Preprocessor.modules.directives = {
 		}
 
 		delete this.state.defines[matches[1]];
+	},
+	
+	ifdef : function(line, matches) {
+
+		var def;
+
+		def = !!this.state.defines[matches[1]];
+
+		this.state.cond_stack.push(def);		
+	},
+
+	endif : function(line, matches) {
+
+		if (this.state.cond_stack.length) {
+			this.state.cond_stack.pop();	
+		} else {
+			throw new Error("unmatched #endif");
+		}
 	}
 
 };
