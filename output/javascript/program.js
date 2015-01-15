@@ -140,7 +140,7 @@ proto.addObjectCode = function(object, target) {
  * Merge symbol code into program table
  */
 proto.mergeSymbols = function(object) {
-	var s, t, n, entry, start, size;
+	var s, t, n, entry, start, slots, comp;
 	
 	for (s in object.symbols) {
 		
@@ -150,14 +150,15 @@ proto.mergeSymbols = function(object) {
 		
 			entry = t[n];
 			start = parseInt(entry.out.split('@')[1]);
-			size = types[entry.type].size;
-			
+			slots = types[entry.type].slots;
+			comp = types[entry.type].size / slots;
+
 			if (s == 'uniform') {
-				this.symbols.addUniform(entry.name, start, size);
+				this.symbols.addUniform(entry.name, start, slots, comp);
 			} else if (s == 'attribute') {					
-				this.symbols.addAttribute(entry.name, start, size);
+				this.symbols.addAttribute(entry.name, start, slots, comp);
 			} else if (s == 'varying') {
-				this.symbols.addVarying(entry.name, start, size);				
+				this.symbols.addVarying(entry.name, start, slots, comp);				
 			}
 
 		}
