@@ -29,10 +29,8 @@ function GlslProgramJavascriptContext() {
 
 	this.uniform_f32 = new Float32Array(this.heap, 0, 128);
 	this.attribute_f32 = new Float32Array(this.heap, 128, 128);
-	this.result_f32 = new Float32Array(this.heap, 256, 128);
-
-	//Alias
-	this.varying_f32 = this.attribute_f32;
+	this.varying_f32 = new Float32Array(this.heap, 256, 128);
+	this.result_f32 = new Float32Array(this.heap, 384, 128);
 }
 
 var proto = GlslProgramJavascriptContext.prototype;
