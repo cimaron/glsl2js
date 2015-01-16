@@ -63,6 +63,10 @@ SymbolTableEntry.typedef = {
 	type : 2
 };
 
+SymbolTableEntry.prototype.getType = function() {
+	return types[this.type];
+};
+
 
 /**
  * symbol_table constructor

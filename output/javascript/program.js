@@ -150,8 +150,8 @@ proto.mergeSymbols = function(object) {
 		
 			entry = t[n];
 			start = parseInt(entry.out.split('@')[1]);
-			slots = types[entry.type].slots;
-			comp = types[entry.type].size / slots;
+			slots = entry.getType().slots;
+			comp = entry.getType().size / slots;
 
 			if (s == 'uniform') {
 				this.symbols.addUniform(entry.name, start, slots, comp);

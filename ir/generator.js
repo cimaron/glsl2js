@@ -44,8 +44,6 @@ glsl.generate = function(state) {
 			ast[i].ir(state, irs);
 		}
 
-		state.symbols.add_variable("<returned>", irs.getTemp());
-		
 		main = state.symbols.get_function('main');
 
 		//Accept main, but warn if params not void
@@ -53,6 +51,8 @@ glsl.generate = function(state) {
 			state.addWarning("main() should take no parameters");
 		}
 
+		state.symbols.add_variable("<returned>", irs.getTemp(main.getType().slots));
+		
 		if (main.type != 'void') {
 			state.addWarning("main() should be type void");	
 		}
@@ -162,7 +162,7 @@ AstDeclaration.prototype.ir = function(state, irs, type) {
 	} else if (qualifier.indexOf('varying') !== -1) {
 		entry.out = irs.getVarying(entry);
 	} else {
-		entry.out = irs.getTemp();
+		entry.out = irs.getTemp(entry.getType().slots);
 	}
 
 	constant = (qualifier === 'const');
@@ -587,7 +587,7 @@ AstExpression.prototype.ir_simple = function(state, irs) {
  * @param   object   irs     IR representation
  */
 AstExpression.prototype.ir_generate = function(state, irs, len, arith) {
-	var table, se, types, dest, i, j, def, match, comment, cnst;
+	var table, se, oprd_types, dest, i, j, def, match, comment, cnst;
 
 	if (!(table = builtin.oper[this.oper])) {
 		this.ir_error(util.format("Could not generate operation %s", this.oper));
@@ -611,38 +611,40 @@ AstExpression.prototype.ir_generate = function(state, irs, len, arith) {
 		}
 	}
 
-	this.Dest = irs.getTemp();
-
-	types = [];
-	dest = [this.Dest];
+	oprd_types = [];
+	dest = [];
 
 	for (i = 0; i < len; i++) {
-		types.push(se[i].Type);
+		oprd_types.push(se[i].Type);
 		dest.push(se[i].Dest);
 	}
 
-	def = new RegExp(types.join(",") + "\:(.*)");
+	def = new RegExp(oprd_types.join(",") + "\:(.*)");
 	for (j in table) {
 		if (match = j.match(def)) {
-			this.Type = match[1];
 			break;
 		}
 	}
 
 	if (!match) {
-		this.ir_error(util.format("Could not apply operation %s to %s", this.oper, types.join(", ")));
+		this.ir_error(util.format("Could not apply operation %s to %s", this.oper, oprd_types.join(", ")));
 	}
+
+	this.Type = match[1];
+	this.Dest = irs.getTemp(types[this.Type].slots);
+	
+	dest.splice(0, 0, this.Dest);
 
 	if (len <= 4) {
 		//this.Dest += util.format(".%s", swizzles[0].substring(0, glsl.type.size[this.Type]));
 	}
 
 	if (len == 1) {
-		comment = util.format("(%s %s) => %s %s", this.oper, se[0].Dest, this.Type, this.Dest);
+		comment = util.format("(%s %s %s) => %s %s", this.oper, se[0].Type, se[0].Dest, this.Type, this.Dest);
 	} else if (len == 2) {
-		comment = util.format("(%s %s %s) => %s %s", se[0].Dest, this.oper, se[1].Dest, this.Type, this.Dest);
+		comment = util.format("(%s %s %s %s %s) => %s %s", se[0].Type, se[0].Dest, this.oper, se[1].Type, se[1].Dest, this.Type, this.Dest);
 	} else if (len == 3) {
-		comment = util.format("(%s ? %s : %s) => %s %s", se[0].Dest, se[1].Dest, se[2].Dest, this.Type, this.Dest);
+		comment = util.format("(%s %s ? %s %s : %s %s) => %s %s", se[0].Type, se[0].Dest, se[1].Type, se[1].Dest, se[2].Type, se[2].Dest, this.Type, this.Dest);
 	}
 
 	irs.push(new IrComment(comment, this.location));
@@ -675,9 +677,9 @@ AstExpression.prototype.ir_incdec = function(state, irs) {
 
 	if (post) {
 		//For post increment, the returned happens before the increment, so we need a temp to store it
-		this.Dest = irs.getTemp();
+		this.Dest = irs.getTemp(type.slots);
 	} else {
-		this.Dest = se.Dest;	
+		this.Dest = se.Dest;
 	}
 
 	irs.push(new IrComment(util.format("(%s%s) => %s %s", post ? se.Dest : op, post ? op : se.Dest, this.Type, this.Dest), this.location));
@@ -685,7 +687,7 @@ AstExpression.prototype.ir_incdec = function(state, irs) {
 	for (i = 0; i < type.slots; i++) {
 
 		if (post) {
-			this.Dest = irs.getTemp();
+			this.Dest = irs.getTemp(type.slots);
 			ir = new IrInstruction('MOV', this.Dest, se.Dest);
 			ir.addOffset(i);
 			ir.setSwizzle(type.swizzle);
@@ -786,7 +788,7 @@ AstFunctionExpression.prototype.ir = function(state, irs) {
 	}
 
 	this.Type = entry.type;
-	this.Dest = irs.getTemp();
+	this.Dest = irs.getTemp(entry.getType().slots);
 
 	irs.push(new IrComment(util.format("%s(%s) => %s %s", name, operands.join(", "), this.Type, this.Dest), this.location));
 
@@ -806,7 +808,7 @@ AstFunctionExpression.prototype.ir = function(state, irs) {
 		for (i = 0; i < proto.parameters.length; i++) {
 			param = proto.parameters[i];
 			loc = state.symbols.add_variable(param.identifier, param.type.specifier.type_name);
-			loc.out = irs.getTemp();
+			loc.out = irs.getTemp(loc.getType().slots);
 			
 			//Add MOV operation from called param to local param
 			irs.push(new IrComment(util.format("PARAM %s => %s %s", operands[i], loc.out, param.type.specifier.type_name), param.location));
@@ -827,7 +829,7 @@ AstFunctionExpression.prototype.ir = function(state, irs) {
 		ret_entry.out = this.Dest;
 
 		retd_entry = state.symbols.add_variable("<returned>", "bool");
-		retd_entry.out = irs.getTemp();
+		retd_entry.out = irs.getTemp(retd_entry.getType().slots);
 
 		entry.Ast.body.ir(state, irs);
 
@@ -848,7 +850,7 @@ AstFunctionExpression.prototype.ir_constructor = function(state, irs) {
 	type = this.subexpressions[0].type_specifier;
 
 	this.Type = type.name;
-	this.Dest = irs.getTemp();
+	this.Dest = irs.getTemp(type.slots);
 
 	comment_text = [];
 	comment = new IrComment("", this.location);

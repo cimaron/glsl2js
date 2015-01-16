@@ -51,12 +51,14 @@ function Ir(target) {
 	this.last = null;
 }
 
-Ir.prototype.getTemp = function() {
-	
-	var t = 'temp@' + this.symbols.temp.next;
+Ir.prototype.getTemp = function(n) {
+	var t;
 
-	this.symbols.temp.next++;
-	
+	n = n || 1;
+	t = 'temp@' + this.symbols.temp.next;
+
+	this.symbols.temp.next += n;
+
 	return t;
 };
 
@@ -74,7 +76,7 @@ Ir.prototype.getUniform = function(entry) {
 	if (!table.entries[entry.name]) {
 		table.entries[entry.name] = entry;
 		entry.out = 'uniform@' + table.next;
-		table.next += types[entry.type].slots;
+		table.next += entry.getType().slots;
 	}
 
 	return entry.out;
@@ -94,7 +96,7 @@ Ir.prototype.getAttribute = function(entry) {
 	if (!table.entries[entry.name]) {
 		table.entries[entry.name] = entry;
 		entry.out = 'attribute@' + table.next;
-		table.next += types[entry.type].slots;
+		table.next += entry.getType().slots;
 	}
 
 	return entry.out;
@@ -114,7 +116,7 @@ Ir.prototype.getVarying = function(entry) {
 	if (!table.entries[entry.name]) {
 		table.entries[entry.name] = entry;
 		entry.out = 'varying@' + table.next;
-		table.next += types[entry.type].slots;
+		table.next += entry.getType().slots;
 	}
 
 	return entry.out;
