@@ -178,14 +178,14 @@ proto.build = function() {
 	var module, shaders;
 
 	module = new Function("stdlib", "foreign", "heap",
-		"\"use asm\";\n" +
+		"//\"use asm\";\n" +
 		"var\n" +
 		"uniform_f32   = new stdlib.Float32Array(heap,   0, 128),\n" +
-		"attribute_f32 = new stdlib.Float32Array(heap, 128, 128),\n" +
-		"varying_f32   = new stdlib.Float32Array(heap, 256, 128),\n" +
-		"result_f32    = new stdlib.Float32Array(heap, 384, 128),\n" +
-		"temp_f32      = new stdlib.Float32Array(heap, 512, 128),\n" +
-		"jstemp        = new stdlib.Float32Array(heap, 636,   4),\n" +
+		"attribute_f32 = new stdlib.Float32Array(heap, 512, 128),\n" +
+		"varying_f32   = new stdlib.Float32Array(heap, 1024, 128),\n" +
+		"result_f32    = new stdlib.Float32Array(heap, 1536, 128),\n" +
+		"temp_f32      = new stdlib.Float32Array(heap, 2048, 128),\n" +
+		"jstemp        = new stdlib.Float32Array(heap, 2544,   4),\n" +
 		"tex           = foreign.tex;\n" +
 		";\n" +
 		"function vs() {\n" +

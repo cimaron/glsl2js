@@ -25,12 +25,12 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 function GlslProgramJavascriptContext() {
 
-	this.heap = new ArrayBuffer(512 * 4);
+	this.heap = new ArrayBuffer(640 * 4);
 
 	this.uniform_f32 = new Float32Array(this.heap, 0, 128);
-	this.attribute_f32 = new Float32Array(this.heap, 128, 128);
-	this.varying_f32 = new Float32Array(this.heap, 256, 128);
-	this.result_f32 = new Float32Array(this.heap, 384, 128);
+	this.attribute_f32 = new Float32Array(this.heap, 128 * 4, 128);
+	this.varying_f32 = new Float32Array(this.heap, 256 * 4, 128);
+	this.result_f32 = new Float32Array(this.heap, 384 * 4, 128);
 }
 
 var proto = GlslProgramJavascriptContext.prototype;
