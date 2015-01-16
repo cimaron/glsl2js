@@ -32,8 +32,11 @@ function GlslProgramJavascript() {
 	this.context = new GlslProgramJavascriptContext();
 
 	this.library = {
-		tex : function() {
-			return [0, 0, 0, 0];	
+		tex : function(dest, i, sampler, src, j, dim) {
+			dest[i] = 0;
+			dest[i + 1] = 0;
+			dest[i + 2] = 0;
+			dest[i + 3] = 1;
 		}
 	};
 
@@ -82,7 +85,7 @@ GlslProgramJavascript.translation_table = {
 	'SNE'  : '%1.* = (%2.* !== %3.*) ? 1.0 : 0.0;',
 	'SUB'  : '%1.* = %2.* - %3.*;',
 	'TAN'  : '%1.* = Math.tan(%2.*);', //Non-standard opcode for NV_gpu
-	'TEX'  : '%1.* = tex(%3, %2.x, %2.y, 0);',
+	'TEX'  : 'tex(%1, %4, %2, %5, %3.x, 0);', //%4 = address of %1, %5 = address of %2
 	'XOR'  : '%1.* = %2.* ^ %3.*;'
 }; 
 
@@ -221,6 +224,7 @@ proto.instruction = function(ins) {
 
 	//variables
 	dest = this.buildComponents(ins.d, true);
+
 	if (!dest) {
 		this.current.push(tpl);
 		return;
@@ -230,6 +234,18 @@ proto.instruction = function(ins) {
 	src.push(this.buildComponents(ins.s1));
 	src.push(this.buildComponents(ins.s2));
 	src.push(this.buildComponents(ins.s3));
+
+	if (ins.op == 'TEX') {
+		js = tpl.replace(/%1/g, dest.name);
+		js = js.replace(/%2/g, src[0].name);
+		js = this.replaceOperand(js, '%3', src[1], 0);
+		js = js.replace(/%4/g, dest.start);
+		js = js.replace(/%5/g, src[0].start);
+
+		this.current.push(js);
+		this.current.push("");
+		return;
+	}
 
 	this.generateTemp(dest, src, tpl);
 
@@ -492,7 +508,7 @@ proto.getResultData = function(start, size) {
  * 
  */
 proto.setTexFunction = function(func) {
-	this.extern.tex = func;
+	this.library.tex = func;
 };
 
 
