@@ -143,21 +143,27 @@ proto.addObjectCode = function(object, target) {
  * Merge symbol code into program table
  */
 proto.mergeSymbols = function(object) {
-	var s, t, n, entry, start, slots, comp;
+	var s, t, n, entry, sym, start, slots, comp;
 	
 	for (s in object.symbols) {
-		
+
 		t = object.symbols[s].entries;	
 
 		for (n in t) {
-		
+
 			entry = t[n];
 			start = parseInt(entry.out.split('@')[1]);
 			slots = entry.getType().slots;
 			comp = entry.getType().size / slots;
 
 			if (s == 'uniform') {
-				this.symbols.addUniform(entry.name, start, slots, comp);
+				
+				sym = this.symbols.addUniform(entry.name, start, slots, comp);
+				
+				if (this.findSymbolCollision(this.symbols.uniform, sym)) {
+					this.rewriteSymbol(this.symbols.uniform, sym, object);
+				}
+
 			} else if (s == 'attribute') {					
 				this.symbols.addAttribute(entry.name, start, slots, comp);
 			} else if (s == 'varying') {
@@ -165,7 +171,124 @@ proto.mergeSymbols = function(object) {
 			}
 
 		}
-	}	
+	}
+};
+
+/**
+ * Scan symbol table to find collisions
+ */
+proto.findSymbolCollision = function(table, symbol) {
+	var i, my_start, my_end, start, end;
+
+	my_start = symbol.pos;
+	my_end = my_start + symbol.slots - 1;
+
+	for (i in table) {
+
+		if (i == symbol.name) {
+			continue;	
+		}
+		
+		start = table[i].pos;
+		end = start + table[i].slots - 1;
+		
+		if ((my_start >= start && my_start <= end) || (my_end >= start && my_end <= end)) {
+			return true;
+		}
+		
+	}
+
+	return false;
+};
+
+/**
+ * Rewrite symbol table entry position in code
+ */
+proto.findNewSymbolPosition = function(table, symbol) {
+	var i, size, addresses, last, next;
+
+	addresses = [];
+
+	//find new address
+	for (i in table) {
+		
+		if (symbol.name == i) {
+			continue;	
+		}
+		
+		//start address
+		addresses.push(table[i].pos);
+		
+		//end address
+		addresses.push(table[i].pos + table[i].slots - 1);
+	}
+	
+	addresses.sort();
+	
+	//Can insert at beginning
+	if (addresses[0] >= symbol.slots) {
+		return 0;
+	}
+
+	//Can insert in between
+	for (i = 1; i < addresses.length; i += 2) {		
+		last = addresses[i];
+		next = addresses[i];
+		
+		if (next - last - 1 > symbol.slots) {
+			return last + 1;	
+		}
+	}
+
+	//Can insert at end
+
+	return addresses.slice(-1)[0] + 1;
+};
+
+/**
+ * Rewrite symbol table entry position in code
+ */
+proto.rewriteSymbol = function(table, symbol, object) {
+	var pos, old_start, old_end, diff, i, ins;
+
+	old_start = symbol.pos;
+	old_end = old_start + symbol.slots - 1;
+
+	symbol.pos = this.findNewSymbolPosition(table, symbol);
+	diff = symbol.pos - old_start;
+
+	for (i = 0; i < object.code.length; i++) {
+
+		ins = object.code[i];
+		
+		if (!(ins instanceof IrInstruction)) {
+			continue;	  
+		}
+
+		this.rewriteOperandAddress(ins.d, old_start, old_end, diff, symbol);
+		this.rewriteOperandAddress(ins.s1, old_start, old_end, diff, symbol);
+		this.rewriteOperandAddress(ins.s2, old_start, old_end, diff, symbol);
+		this.rewriteOperandAddress(ins.s3, old_start, old_end, diff, symbol);
+	}
+};
+
+/**
+ * Rewrite symbol table entry position in code
+ */
+proto.rewriteOperandAddress = function(oprd, old_start, old_end, diff, symbol) {
+	var diff;
+	
+	if (!oprd) {
+		return;	
+	}
+
+	if (oprd.name != symbol.type) {
+		return;
+	}
+
+	if (oprd.address >= old_start && oprd.address <= old_end) {
+		oprd.address += diff;
+	}
 };
 
 /**

@@ -36,21 +36,30 @@ var proto = GlslProgramJavascriptVars.prototype;
  * Add uniform variable
  */
 proto.addUniform = function(name, pos, slots, comp) {
-	this.uniform[name] = new GlslProgramJavascriptVar(name, pos, slots, comp);
+
+	this.uniform[name] = new GlslProgramJavascriptVar(name, pos, slots, comp, 'uniform');
+	
+	return this.uniform[name];	
 };
 
 /**
  * Add attribute variable
  */
 proto.addAttribute = function(name, pos, slots, comp) {
-	this.attribute[name] = new GlslProgramJavascriptVar(name, pos, slots, comp);
+
+	this.attribute[name] = new GlslProgramJavascriptVar(name, pos, slots, comp, 'attribute');
+
+	return this.attribute[name];	
 };
 
 /**
  * Add varying variable
  */
 proto.addVarying = function(name, pos, slots, comp) {
-	this.varying[name] = new GlslProgramJavascriptVar(name, pos, slots, comp);
+
+	this.varying[name] = new GlslProgramJavascriptVar(name, pos, slots, comp, 'varying');
+
+	return this.varying[name];
 };
 
 
@@ -58,10 +67,11 @@ proto.addVarying = function(name, pos, slots, comp) {
 /**
  * GlslProgramJavascriptVar Class
  */
-function GlslProgramJavascriptVar(name, pos, slots, comp) {
+function GlslProgramJavascriptVar(name, pos, slots, comp, type) {
 	this.name = name;
 	this.pos = pos;
 	this.slots = slots;
 	this.components = comp;
+	this.type = type;
 }
 
