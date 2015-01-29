@@ -586,7 +586,48 @@ proto.toString = function() {
 	return util.format("%s(%s)", this.subexpressions[0], this.expressions.join(", "));
 };
 
+/**
+ * AST For Statement Class
+ */
+function AstForStatement(init, for_rest, body) {
+	AstNode.apply(this);
+	this.init = init;
+	this.for_rest = for_rest;
+	this.body = body;
+}
 
+util.inherits(AstForStatement, AstNode);
+proto = AstForStatement.prototype;
+
+/**
+ * Return string representation of node
+ *
+ * @return  string
+ */
+proto.toString = function() {
+	return util.format("for (%s %s) %s", this.init, this.for_rest, this.body);
+};
+
+/**
+ * AST Condition Class
+ */
+function AstConditionStatement(init, optional) {
+	AstNode.apply(this);
+	this.init = init;
+	this.optional = optional;
+}
+
+util.inherits(AstConditionStatement, AstNode);
+proto = AstConditionStatement.prototype;
+
+/**
+ * Return string representation of node
+ *
+ * @return  string
+ */
+proto.toString = function() {
+	return util.format("%s; %s", this.init, this.optional || "");
+};
 
 /**
  * AST Selection Statement Class
@@ -688,6 +729,8 @@ glsl.ast = {
 	FunctionExpression : AstFunctionExpression,
 	SelectionStatement : AstSelectionStatement,
 	StructSpecifier : AstStructSpecifier,
-	JumpStatement : AstJumpStatement	
+	JumpStatement : AstJumpStatement,
+	ForStatement : AstForStatement,
+	ConditionStatement : AstConditionStatement
 };
 
