@@ -164,6 +164,17 @@ Ir.normalizeSwizzle = function(swz) {
 	return n;
 };
 
+/**
+ * Validate a set of components against a list of valid components
+ */
+Ir.matchComponents = function(src, list) {
+	var regex;
+	
+	regex = new RegExp("^[" + list + "]*$");
+	
+	return regex.test(src);
+};
+
 Ir.swizzles = ["xyzw", "rgba", "stpq"];
 
 

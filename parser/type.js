@@ -23,10 +23,10 @@ function Type(name, size, slots, base) {
 	this.name = name;
 	this.size = size;
 	this.slots = slots;
-	this.swizzle = (size / slots != 4) ? "xyzw".slice(0, size / slots) : "";
+	this.components = (size / slots);
+	this.swizzle = (this.components != 4) ? "xyzw".slice(0, this.components) : "";
 	this.base = base || name;
 }
-
 
 /**
  * Do a cast on a constant

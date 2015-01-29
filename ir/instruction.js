@@ -50,8 +50,24 @@ function IrInstruction(op, d, s1, s2, s3) {
 IrInstruction.operands = ['d', 's1', 's2', 's3'];
 
 
+/**
+ * Create operand for instruction
+ *
+ * @param   mixed   opr   String or IrOperand
+ *
+ * @return  mixed
+ */
 IrInstruction.prototype.operand = function(opr) {
-	return opr ? new IrOperand(opr) : "";
+
+	if (!opr) {
+		return "";	
+	}
+
+	if (opr instanceof IrOperand) {
+		return opr;	
+	}
+
+	return new IrOperand(opr);
 };
 
 /**
@@ -211,6 +227,18 @@ IrOperand.prototype.addOffset = function(offset) {
 	this.address = this.address || 0;
 
 	this.address += offset;
+};
+
+/**
+ * Set components size if not already set
+ */
+IrOperand.prototype.makeSize = function(size) {
+
+	if (!this.swizzle) {
+		this.swizzle = "xyzw".substring(0, size);
+	} else if (this.swizzle.length != size) {
+		throw new Error(util.format("Cannot coerce operand to size %s", size));
+	}
 };
 
 /**

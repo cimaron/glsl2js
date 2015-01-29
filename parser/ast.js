@@ -103,7 +103,7 @@ var ast_operators = [
 	"&=",
 	"^=",
 	"|=",
-	"?:",
+	"?",
 	"++x",
 	"--x",
 	"x++",
@@ -318,7 +318,7 @@ proto.toString = function() {
 			output = util.format("%s%s", this.subexpressions[0], this.oper.replace('x', '') );
 			break;
 
-		case '?:':
+		case '?':
 			output = util.format("%s ? %s : %s", this.subexpressions[0], this.subexpressions[1], this.subexpressions[2]);				
 			break;
 
@@ -343,7 +343,7 @@ proto.toString = function() {
 			break;
 		
 		case 'bool':
-			output = util.format("%s", this.primary_expression.bool_constant ? 'true' : 'false');
+			output = util.format("%s", this.primary_expression.bool_constant == 'true' ? 'true' : 'false');
 			break;
 
 	}

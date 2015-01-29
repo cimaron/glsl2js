@@ -65,7 +65,7 @@ GlslProgramJavascript.translation_table = {
 	'ENDIF': '}',
 	'FLR'  : '%1.* = Math.floor(%2.*);',
 	'FRC'  : '%1.* = %2.* - Math.floor(%2.*);',
-	'IF'   : 'if (%1.x) {',
+	'IF'   : 'if (%1.*) {',
 	'MAD'  : '%1.* = (%2.* * %3.*) + %4.*;',
 	'MAX'  : '%1.* = Math.max(%2.*, %3.*);',
 	'MIN'  : '%1.* = Math.min(%2.*, %3.*);',
@@ -335,6 +335,7 @@ proto.instruction = function(ins) {
 	var tpl, dest, src, i, j, k, code, js;
 
 	if (ins instanceof IrComment) {
+		this.current.push("");
 		this.current.push('// ' + ins.toString().replace("\n", ""));
 		return;
 	}

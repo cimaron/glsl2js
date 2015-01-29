@@ -415,9 +415,10 @@ AstExpression.prototype.ir_op = function(state, irs) {
 		case '^=':
 		case '|=':
 			break;
-		case '?:':
-			break;
 		*/
+		case '?':
+			this.ir_ternary(state, irs);
+			break;
 		
 		//Increment / Decrement
 		case '++x':
@@ -577,6 +578,14 @@ AstExpression.prototype.ir_simple = function(state, irs) {
 		return;
 	}
 
+	//bool constant
+	if (this.primary_expression.type == 'bool') {
+		this.Type = 'bool';
+		this.Dest = this.primary_expression.bool_constant;
+		this.Const = true;
+		return;
+	}
+
 	this.ir_error("Cannot translate unknown simple expression type");
 };
 
@@ -700,6 +709,63 @@ AstExpression.prototype.ir_incdec = function(state, irs) {
 		irs.push(ir);
 	}
 
+};
+
+/**
+ * Constructs a ternary expression
+ *
+ * @param   object   state   GLSL state
+ * @param   object   irs     IR representation
+ */
+AstExpression.prototype.ir_ternary = function(state, irs) {
+	var cond, pass, ontrue, onfalse, dest, test;
+	
+	cond = this.subexpressions[0];
+	ontrue = this.subexpressions[1];
+	onfalse = this.subexpressions[2];
+
+
+	if (!Type.canCast(cond.Type, 'bool')) {
+		this.ir_error("boolean expression expected");
+	}
+
+	if (ontrue.Type != onfalse.Type) {
+		this.ir_error("Types do not match: %s, %s", ontrue.Type, onfalse.Type);	
+	}
+
+	this.Type = ontrue.Type;
+
+	//test can be evaluated at compile time
+	if (cond.Const) {
+		
+		pass = eval(cond.Dest);
+
+		if (pass) {
+			this.Dest = ontrue.Dest;
+			this.Const = ontrue.Const;
+			return;
+		} else {
+			this.Dest = onfalse.Dest;
+			this.Const = onfalse.Const;
+			return;
+		}
+	}
+
+	this.Dest = irs.getTemp(types[ontrue.Type].slots);
+
+	irs.push(new IrComment(util.format("(%s %s ? %s %s : %s %s) => %s %s", cond.Type, cond.Dest, ontrue.Type, ontrue.Dest, onfalse.Type, onfalse.Dest, this.Type, this.Dest), this.location));
+
+	dest = new IrOperand(this.Dest);
+	dest.makeSize(types[this.Type].components);
+
+	test = new IrInstruction("IF", cond.Dest);
+	test.d.makeSize(1);
+
+	irs.push(test);
+	irs.push(new IrInstruction("MOV", dest, ontrue.Dest));
+	irs.push(new IrInstruction("ELSE"));
+	irs.push(new IrInstruction("MOV", dest, onfalse.Dest));
+	irs.push(new IrInstruction("ENDIF"));
 };
 
 /**
@@ -919,7 +985,7 @@ AstFunctionExpression.prototype.ir_constructor = function(state, irs) {
  * @param   object   irs     IR representation
  */
 AstExpression.prototype.ir_field = function(state, irs) {
-	var field, swz, base, se;
+	var field, swz, base, se, valid_swz, type;
 
 	//pick swizzle set
 	field = this.primary_expression.identifier;
@@ -927,9 +993,29 @@ AstExpression.prototype.ir_field = function(state, irs) {
 	se = this.subexpressions[0];
 	se.ir(state, irs);
 
+
 	if (Ir.isSwizzle(field)) {
 
-		base = types[se.Type].base;
+		type = types[se.Type];
+
+		//error on scalar
+		if (type.size == 1) {
+			this.ir_error("Invalid component selection on a scalar");
+		}
+
+		//error on matrix
+		if (type.slots > 1) {
+			this.ir_error("Invalid component selection on a matrix");
+		}
+
+		//error if components outside of base component range (e.g. 'z' in vec2)
+		swz = Ir.normalizeSwizzle(field);
+		valid_swz = "xyzw".substr(0, type.components);
+		if (!Ir.matchComponents(swz, valid_swz)) {
+			this.ir_error(util.format("Invalid component selection on %s", se.Type));
+		}
+
+		base = type.base;
 		if (field.length > 1) {
 			if (base == 'int') {
 				base = 'ivec' + field.length;	
@@ -944,11 +1030,16 @@ AstExpression.prototype.ir_field = function(state, irs) {
 
 		this.Type = base;
 
-		if (field.length > 4 || !this.Type) {
-			this.ir_error(util.format("Invalid field selection %s.%s", se, field));
+		//error 
+		if (field.length > 4) {
+			this.ir_error("Invalid component selection: too many components");
 		}
 
-		this.Dest = util.format("%s.%s", se.Dest, Ir.normalizeSwizzle(field));
+		if (!this.Type) {
+			this.ir_error("Invalid component selection");
+		}
+
+		this.Dest = util.format("%s.%s", se.Dest, swz);
 	}
 }
 
@@ -959,23 +1050,35 @@ AstExpression.prototype.ir_field = function(state, irs) {
  * @param   ast_node    Statement
  */
 AstSelectionStatement.prototype.ir = function(state, irs) {
-	var ir, cond;
+	var ir, cond, pass;
 
 	this.condition.ir(state, irs);
-	//@todo: add a check that condition is bool type?
 
-	irs.push(new IrComment(util.format("if %s then", this.condition.Dest), this.location));
+	cond = this.condition;
 
-	//set a flag based on the result
-	ir = new IrInstruction('IF', this.condition.Dest);
-
-	if (['bool', 'int', 'float'].indexOf(this.condition.Type) === -1) {
+	if (!Type.canCast(cond.Type, 'bool')) {
 		this.ir_error("boolean expression expected");
 	}
 
-	if (!ir.d.swizzle) {
-		ir.d.swizzle = 'x';
+	//test can be evaluated at compile time
+	if (cond.Const) {
+
+		pass = eval(cond.Dest);
+		
+		if (pass) {
+			this.then_statement.ir(state, irs);
+			return;
+		} else {
+			this.else_statement.ir(state, irs);
+			return;
+		}
 	}
+
+	irs.push(new IrComment(util.format("if %s then", cond.Dest), this.location));
+
+	//set a flag based on the result
+	ir = new IrInstruction('IF', cond.Dest);
+	ir.d.makeSize(1);
 
 	irs.push(ir);
 
