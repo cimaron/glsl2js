@@ -409,12 +409,13 @@ proto.toString = function() {
 /**
  * AST Declarator List Class
  */
-function AstDeclaratorList(type) {
+function AstDeclaratorList(type, inline) {
 	AstNode.apply(this);
 
 	this.type = type;
 	this.declarations = [];
 	this.invariant = 0;
+	this.inline = inline;
 }
 
 util.inherits(AstDeclaratorList, AstNode);
@@ -426,7 +427,7 @@ proto = AstDeclaratorList.prototype;
  * @return  string
  */
 proto.toString = function() {
-	return util.format("%s %s;\n", this.type || "invariant ", this.declarations.join(", "));
+	return util.format("%s %s;%s", this.type || "invariant ", this.declarations.join(", "), this.inline ? "": "\n");
 };
 
 
@@ -477,7 +478,7 @@ proto = AstExpressionStatement.prototype;
  * @return  string
  */
 proto.toString = function() {
-	return util.format("%s;\n", this.expression || "");
+	return util.format("%s;%s", this.expression || "", this.inline ? "" : "\n");
 };
 
 
