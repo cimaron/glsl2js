@@ -24,10 +24,12 @@ Preprocessor.modules.directives = {
 	state : {
 		lines : [],
 		defines : {
+		},
+		extensions : {
 		}
 	},
 
-	process : function(src) {
+	process : function(src, state) {
 		var i, l;
 		
 		this.state.lines = src.split("\n");
@@ -47,16 +49,18 @@ Preprocessor.modules.directives = {
 			i++;
 		}
 
+		state.directives = this.state;
+
 		return this.state.lines.join("\n");
 	},
 	
 	processLine : function(line, i) {
-		var d, matches, raw, e, sub, cond;
+		var d, matches, raw, e, sub, cond, lmatches;
 
 		matches = line.match(/^([ \t]*)#(.*)$/);
 		if (!matches) {
 
-			if (this.state.cond_stack.length != 0 && !this.state.cond_stack.slice(-1)[0]) {
+			if (this.state.cond_stack.length !== 0 && !this.state.cond_stack.slice(-1)[0]) {
 				return "";
 			}
 
@@ -81,6 +85,7 @@ Preprocessor.modules.directives = {
 				case 'undef':
 				case 'ifdef':
 				case 'endif':
+				case 'extension':
 					this[lmatches[0]](line, lmatches);
 					return "";
 			}
@@ -116,6 +121,15 @@ Preprocessor.modules.directives = {
 		}
 
 		this.state.defines[matches[1]] = matches[2] || "";		
+	},
+
+	extension : function(line, matches) {
+ 
+		if (matches.length <= 1 || matches.length >= 5) {
+			throw new Error("Syntax error in #extension");
+		}
+ 
+		this.state.extensions[matches[1]] = matches[3] || "";
 	},
 
 	undef : function(line, matches) {
