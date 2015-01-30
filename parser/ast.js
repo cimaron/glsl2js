@@ -632,7 +632,14 @@ AstStructSpecifier.anon_count = 1;
 util.inherits(AstStructSpecifier, AstNode);
 proto = AstStructSpecifier.prototype;
 
-
+/**
+ * Return string representation of node
+ *
+ * @return  string
+ */
+proto.toString = function() {
+	return util.format("struct %s { %s }", this.name, this.declarations.join('') );
+};
 
 /**
  * AST Jump 
