@@ -66,6 +66,20 @@ proto.ir = function(state, irs) {
 	//throw new Error("Missing ir generator for node of type " + this.constructor.name);
 };
 
+AstNode.depth = 1;
+
+AstNode.indent = function() {
+	this.depth++;
+};
+
+AstNode.unindent = function() {
+	this.depth--;
+};
+
+AstNode.getIndent = function(tab) {
+	tab = tab || "    ";
+	return new Array(this.depth).join(tab);
+};
 
 //inverse of operators
 var ast_operators = [
@@ -426,7 +440,7 @@ proto = AstDeclaratorList.prototype;
  * @return  string
  */
 proto.toString = function() {
-	return util.format("%s %s;\n", this.type || "invariant ", this.declarations.join(", "));
+	return util.format("%s%s;\n", this.type || "invariant ", this.declarations.length > 0 ? " " + this.declarations.join(", ") : "");
 };
 
 
@@ -508,23 +522,19 @@ proto.toString = function() {
 	    indent
 		;
 
-	AstCompoundStatement._depth++;
-	indent = new Array(AstCompoundStatement._depth).join("  ")
+	indent = AstNode.getIndent();
 
-	stmts = indent + "  " + this.statements.join(indent + "  ");
+	AstNode.indent();
+	stmts = AstNode.getIndent() + this.statements.join(AstNode.getIndent());
+	AstNode.unindent();
 
 	str = "\n" + indent + "{\n"
 	    + stmts
 		+ indent + "}\n"
 		;
 
-	AstCompoundStatement._depth--;
-
 	return str;
 };
-
-//Used for toString indentation
-AstCompoundStatement._depth = 0;
 
 /**
  * AST Function Definition Class
@@ -638,7 +648,15 @@ proto = AstStructSpecifier.prototype;
  * @return  string
  */
 proto.toString = function() {
-	return util.format("struct %s { %s }", this.name, this.declarations.join('') );
+	var decls;
+
+	AstNode.indent();
+	decls = AstNode.getIndent() + this.declarations.join(AstNode.getIndent());
+	AstNode.unindent();
+
+	str = util.format("struct %s {\n%s%s}", this.name, decls, AstNode.getIndent());
+
+	return str;
 };
 
 /**
