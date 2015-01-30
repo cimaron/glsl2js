@@ -796,11 +796,12 @@ struct_specifier:
 /* Line: 1423 */
 struct_declaration_list:
 		  struct_declaration {
-				$$ = [$1];
+				$$ = new AstDeclaratorList();
+				$$.declarations = [$1];
 			}
 		| struct_declaration_list struct_declaration {
 				$$ = $1;
-				$$.push($2);
+				$$.declarations.push( $2 );
 			}
 		;
 
@@ -810,10 +811,9 @@ struct_declaration:
 				var type = new AstFullySpecifiedType();
 				type.setLocation(@1);
 				type.specifier = $1;
-				
 				$$ = new AstDeclaratorList(type);
 				$$.setLocation(@1);
-				$$.declarations = $2; }
+				$$.declarations = [$2]; }
 		;
 
 /* Line: 1451 */
