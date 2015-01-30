@@ -23,10 +23,7 @@ Preprocessor.modules.directives = {
 
 	state : {
 		lines : [],
-		defines : {
-		},
-		extensions : {
-		}
+		defines : {}
 	},
 
 	process : function(src, state) {
@@ -40,6 +37,7 @@ Preprocessor.modules.directives = {
 			__VERSION__ : '300'
 		};
 		this.state.cond_stack = [];
+		this.state.compile_state = state;
 
 		i = 0;
 		l = this.state.lines.length;
@@ -49,11 +47,9 @@ Preprocessor.modules.directives = {
 			i++;
 		}
 
-		state.directives = this.state;
-
 		return this.state.lines.join("\n");
 	},
-	
+
 	processLine : function(line, i) {
 		var d, matches, raw, e, sub, cond, lmatches;
 
@@ -124,12 +120,80 @@ Preprocessor.modules.directives = {
 	},
 
 	extension : function(line, matches) {
+ 		var ext_name, behavior, all, ext_warn, extensions;
  
-		if (matches.length <= 1 || matches.length >= 5) {
+		if (matches.length <= 1 || matches.length >= 5 || matches[2] != ':') {
 			throw new Error("Syntax error in #extension");
 		}
  
-		this.state.extensions[matches[1]] = matches[3] || "";
+ 		ext_name = matches[1];
+ 		behavior = matches[3];
+		all = (ext_name == 'all');
+
+		extensions = this.state.compile_state.extensions;
+
+		if (!all && !(ext_name in glsl.extensions)) {
+			ext_warn = util.format("Extension %s not supported", ext_name);
+		}
+
+		if (all && (behavior == 'require' || behavior == 'enable')) {
+			throw new Error("Syntax error in #extension");				
+		}	
+
+		switch (behavior) {
+			
+			case 'require':
+
+				if (ext_warn) {
+					throw new Error(ext_warn);
+				}
+
+				extensions.enable(ext_name);
+				
+				break;
+
+			case 'enable':
+
+				if (ext_warn) {
+					this.state.compile_state.addWarning(ext_warn);
+					return;
+				}
+
+				extensions.enable(ext_name);
+
+				break;
+			
+			case 'disable':
+
+				if (all) {
+					extensions.disableAll();
+					return;
+				}
+
+				if (ext_warn) {
+					this.state.compile_state.addWarning(ext_warn);
+					return;
+				}
+
+				extensions.disable(ext_name);
+				
+				break;
+
+			case 'warn':
+
+				if (ext_warn) {
+					this.state.compile_state.addWarning(ext_warn);
+					return;
+				}
+
+				//@todo: Need to devise warning method of extension calls
+
+				this.state.compile_state.addWarning("Extension warnings not implemented yet");
+				
+				extensions.enable(ext_name);
+
+				break;
+		}		
 	},
 
 	undef : function(line, matches) {

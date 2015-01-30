@@ -64,7 +64,8 @@ gulp.task('_parser', ['jison', 'jison-lex'], function() {
 		'ir/builtin.js',
 		'build/grammar.js',
 		'build/lexer.js',
-		'parser/parser.js'
+		'parser/parser.js',
+		'extensions/**/*.js'
 		])
 		.pipe(concat('parser.js'))
 		.pipe(gulp.dest('build'))
@@ -170,7 +171,8 @@ gulp.task('watch', function() {
         'output/**/*.js',
         'parser/*.js',
         'parser/*.jison',
-        'preprocessor/*.js'
+        'preprocessor/*.js',
+		'extensions/**/*.js'
     ], ['default']);
 });
 
@@ -180,7 +182,8 @@ gulp.task('watch-parser', function() {
         'library/*.js',
         'parser/*.js',
         'parser/*.jison',
-        'preprocessor/*.js'
+        'preprocessor/*.js',
+		'extensions/**/*.js'
     ], ['parser']);
 });
 

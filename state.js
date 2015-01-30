@@ -45,6 +45,8 @@ function GlslState(options) {
 
 	this.errors = [];
 	this.warnings = [];
+
+	this.extensions = new GlslExtensions();
 }
 
 proto = GlslState.prototype = {};
@@ -158,7 +160,7 @@ proto.getErrors = function() {
 };
 
 /**
- * Get compile errors
+ * Get compile warnings
  *
  * @return  mixed
  */
