@@ -21,9 +21,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 /**
- * GlslProgramJavascriptContext class
+ * GlslProgramJSContext class
  */
-function GlslProgramJavascriptContext() {
+function GlslProgramJSContext() {
 
 	this.heap = new ArrayBuffer(640 * 4);
 
@@ -33,6 +33,6 @@ function GlslProgramJavascriptContext() {
 	this.result_f32 = new Float32Array(this.heap, 384 * 4, 128);
 }
 
-var proto = GlslProgramJavascriptContext.prototype;
+var proto = GlslProgramJSContext.prototype;
 
 

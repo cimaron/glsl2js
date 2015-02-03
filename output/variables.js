@@ -23,13 +23,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 /**
  * GlslProgramJavascriptVars Class
  */
-function GlslProgramJavascriptVars() {
+function GlslProgramVars() {
 	this.uniform = {};
 	this.attribute = {};
 	this.varying = {};
 }
 
-var proto = GlslProgramJavascriptVars.prototype;
+var proto = GlslProgramVars.prototype;
 
 
 /**
@@ -37,7 +37,7 @@ var proto = GlslProgramJavascriptVars.prototype;
  */
 proto.addUniform = function(name, pos, slots, comp) {
 
-	this.uniform[name] = new GlslProgramJavascriptVar(name, pos, slots, comp, 'uniform');
+	this.uniform[name] = new GlslProgramVar(name, pos, slots, comp, 'uniform');
 	
 	return this.uniform[name];	
 };
@@ -47,7 +47,7 @@ proto.addUniform = function(name, pos, slots, comp) {
  */
 proto.addAttribute = function(name, pos, slots, comp) {
 
-	this.attribute[name] = new GlslProgramJavascriptVar(name, pos, slots, comp, 'attribute');
+	this.attribute[name] = new GlslProgramVar(name, pos, slots, comp, 'attribute');
 
 	return this.attribute[name];	
 };
@@ -57,7 +57,7 @@ proto.addAttribute = function(name, pos, slots, comp) {
  */
 proto.addVarying = function(name, pos, slots, comp) {
 
-	this.varying[name] = new GlslProgramJavascriptVar(name, pos, slots, comp, 'varying');
+	this.varying[name] = new GlslProgramVar(name, pos, slots, comp, 'varying');
 
 	return this.varying[name];
 };
@@ -65,9 +65,9 @@ proto.addVarying = function(name, pos, slots, comp) {
 
 
 /**
- * GlslProgramJavascriptVar Class
+ * GlslProgramVar Class
  */
-function GlslProgramJavascriptVar(name, pos, slots, comp, type) {
+function GlslProgramVar(name, pos, slots, comp, type) {
 	this.name = name;
 	this.pos = pos;
 	this.slots = slots;
