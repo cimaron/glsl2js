@@ -937,7 +937,11 @@ selection_rest_statement:
 /* Line: 1604 */
 condition:
 			expression
-		|	fully_specified_type any_identifier '=' initializer
+		|	fully_specified_type any_identifier '=' initializer {
+				var decl = new AstDeclaration($2, false, null, $4);
+				$$ = new AstDeclaratorList($1, true);
+				$$.setLocation(@1);
+				$$.declarations.push(decl); }
 		;
 
 /* Line: 1622 */
@@ -955,13 +959,20 @@ case_label:
 iteration_statement:
 			'WHILE' '(' condition ')' statement_no_new_scope
 		|	'DO' statement 'WHILE' '(' expression ')' ';'
-		|	'FOR' '(' for_init_statement for_rest_statement ')' statement_no_new_scope
+		|	'FOR' '(' for_init_statement for_rest_statement ')' statement_no_new_scope {
+				$$ = new AstForStatement( $3, $4, $6 );
+				$$.setLocation(@1);
+			}
 		;
 
 /* Line: 1655 */
 for_init_statement:
-			expression_statement
-		|	declaration_statement
+			expression_statement {
+				$$ = $1;
+				$$.inline = true; }
+		|	declaration_statement {
+				$$ = $1;
+				$$.inline = true; }
 		;
 
 /* Line: 1660 */
@@ -972,8 +983,11 @@ conditionopt:
 
 /* Line: 1668 */
 for_rest_statement:
-			conditionopt ';'
-		|	conditionopt ';' expression
+			conditionopt ';' {
+				$$ = new AstConditionStatement( $1 );
+			}
+		|	conditionopt ';' expression {
+				$$ = new AstConditionStatement( $1, $3 ); }
 		;
 
 /* Line: 1682 */
