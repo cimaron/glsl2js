@@ -883,7 +883,9 @@ statement_no_new_scope:
 
 /* Line: 1530 */
 compound_statement_no_new_scope:
-		  '{' '}'
+		  '{' '}' {
+				$$ = new AstCompoundStatement(false);
+				$$.setLocation(@1); }
 		| '{' statement_list '}' {
 				$$ = new AstCompoundStatement(false, $2);
 				$$.setLocation(@1); }

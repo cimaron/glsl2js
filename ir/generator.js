@@ -234,16 +234,26 @@ AstFunctionDefinition.prototype.ir = function(state, irs) {
  * @param   object   irs     IR representation
  */
 AstFunction.prototype.ir = function(state, irs) {
-	var i;
+	var i, def, entry;
+
+	def = [];
 
 	if (this.parameters.length == 0) {
-		this.entry.definition.push('void');
+		def.push('void');
 	}
 
 	//generate param list
 	for (i = 0; i < this.parameters.length; i++) {
-		this.entry.definition.push(this.parameters[i].type.specifier.type_name);
+		def.push(this.parameters[i].type.specifier.type_name);
 	}
+
+	entry = state.symbols.get_function(this.identifier, def);
+	
+	if (entry && entry !== this.entry) {
+		this.ir_error(util.format("Cannot redefine %s", this.identifier));
+	}
+
+	this.entry.definition = def;
 };
 
 

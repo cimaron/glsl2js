@@ -530,7 +530,7 @@ proto.toString = function() {
 	AstNode.unindent();
 
 	str = "\n" + indent + "{\n"
-	    + stmts
+	    + (this.statements.length > 0 ? stmts : "")
 		+ indent + "}\n"
 		;
 

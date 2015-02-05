@@ -271,3 +271,40 @@ proto.get_entry = function(name, typedef, def) {
 };
 
 
+
+
+/**
+ * SymbolTableEntry constructor
+ */
+function SymboltableTypeDefinition(type, arg_types) {	
+	this.type = type;
+	this.arg_types = arg_types;
+}
+
+proto = SymboltableTypeDefinition.prototype;
+
+/**
+ * Match argument list types
+ *
+ * @param   array   args   List of argument types
+ *
+ * @return  bool
+ */
+proto.matchArguments = function(args) {
+	var i;
+	
+	for (i = 0; i < args.length; i++) {
+		if (!this.arg_types[i] || this.arg_types[i] != args[i]) {
+			return false;	
+		}
+	}
+
+	return true;
+};
+
+proto.toString = function() {
+	return this.arg_types.join(",") + ":" + this.type;
+};
+
+
+
