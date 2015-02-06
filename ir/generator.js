@@ -413,7 +413,6 @@ AstExpression.prototype.ir_op = function(state, irs) {
 			this.ir_generate(state, irs, 1);
 			break;
 
-		/*
 		case '*=':
 		case '/=':
 		case '%=':
@@ -424,8 +423,9 @@ AstExpression.prototype.ir_op = function(state, irs) {
 		case '&=':
 		case '^=':
 		case '|=':
+			this.ir_op_assign(state, irs);
 			break;
-		*/
+
 		case '?':
 			this.ir_ternary(state, irs);
 			break;
@@ -511,6 +511,25 @@ AstExpression.prototype.ir_assign = function(state, irs, skip_comment/*, local*/
 		}
 		*/
 	}
+};
+
+/**
+ * Constructs an operator assignment expression (e.g. +=)
+ *
+ * @param   object   state   GLSL state
+ * @param   object   irs     IR representation
+ */
+AstExpression.prototype.ir_op_assign = function(state, irs, type) {
+	var op, expr, assign;
+
+	//cut off '='
+	op = this.oper.slice(0, -1);
+
+	expr = new AstExpression(op, this.subexpressions[0], this.subexpressions[1]);
+
+	assign = new AstExpression('=', this.subexpressions[0], expr);
+	
+	assign.ir(state, irs);
 };
 
 
