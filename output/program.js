@@ -161,8 +161,10 @@ proto.findNewSymbolPosition = function(table, symbol) {
 		addresses.push(table[i].pos + table[i].slots - 1);
 	}
 	
-	addresses.sort();
-	
+	addresses.sort(function(a, b) {
+		return a - b;
+	});
+
 	//Can insert at beginning
 	if (addresses[0] >= symbol.slots) {
 		return 0;
@@ -171,7 +173,7 @@ proto.findNewSymbolPosition = function(table, symbol) {
 	//Can insert in between
 	for (i = 1; i < addresses.length; i += 2) {		
 		last = addresses[i];
-		next = addresses[i];
+		next = addresses[i + 1];
 		
 		if (next - last - 1 > symbol.slots) {
 			return last + 1;	
