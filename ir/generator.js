@@ -530,6 +530,10 @@ AstExpression.prototype.ir_op_assign = function(state, irs, type) {
 	assign = new AstExpression('=', this.subexpressions[0], expr);
 	
 	assign.ir(state, irs);
+
+	this.Dest = assign.Dest;
+	this.Type = assign.Type;
+	this.Const = assign.Const;
 };
 
 
