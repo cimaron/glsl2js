@@ -960,7 +960,7 @@ iteration_statement:
 			'WHILE' '(' condition ')' statement_no_new_scope
 		|	'DO' statement 'WHILE' '(' expression ')' ';'
 		|	'FOR' '(' for_init_statement for_rest_statement ')' statement_no_new_scope {
-				$$ = new AstForStatement( $3, $4, $6 );
+				$$ = new AstIterationStatement('for', $3, $4.cond, $4.rest, $6);
 				$$.setLocation(@1);
 			}
 		;
@@ -984,10 +984,15 @@ conditionopt:
 /* Line: 1668 */
 for_rest_statement:
 			conditionopt ';' {
-				$$ = new AstConditionStatement( $1 );
-			}
+				$$ = {
+					cond : $1,
+					rest : null
+				}; }
 		|	conditionopt ';' expression {
-				$$ = new AstConditionStatement( $1, $3 ); }
+				$$ = {
+					cond : $1,
+					rest : $3
+				}; }
 		;
 
 /* Line: 1682 */

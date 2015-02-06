@@ -598,17 +598,19 @@ proto.toString = function() {
 };
 
 /**
- * AST For Statement Class
+ * AST Iteration Statement Class
  */
-function AstForStatement(init, for_rest, body) {
+function AstIterationStatement(mode, init, condition, rest_expression, body) {
 	AstNode.apply(this);
+	this.mode = mode;
 	this.init = init;
-	this.for_rest = for_rest;
+	this.condition = condition;
+	this.rest_expression = rest_expression;
 	this.body = body;
 }
 
-util.inherits(AstForStatement, AstNode);
-proto = AstForStatement.prototype;
+util.inherits(AstIterationStatement, AstNode);
+proto = AstIterationStatement.prototype;
 
 /**
  * Return string representation of node
@@ -616,28 +618,16 @@ proto = AstForStatement.prototype;
  * @return  string
  */
 proto.toString = function() {
-	return util.format("for (%s %s) %s", this.init, this.for_rest, this.body);
-};
-
-/**
- * AST Condition Class
- */
-function AstConditionStatement(init, optional) {
-	AstNode.apply(this);
-	this.init = init;
-	this.optional = optional;
-}
-
-util.inherits(AstConditionStatement, AstNode);
-proto = AstConditionStatement.prototype;
-
-/**
- * Return string representation of node
- *
- * @return  string
- */
-proto.toString = function() {
-	return util.format("%s; %s", this.init, this.optional || "");
+	
+	switch (this.mode) {
+		
+		case 'for':
+			return util.format("for (%s %s; %s) %s", this.init, this.condition, this.rest_expression, this.body);
+			break;
+		
+		default:
+			return AstNode.toString.apply(this);
+	}
 };
 
 /**
@@ -756,7 +746,6 @@ glsl.ast = {
 	SelectionStatement : AstSelectionStatement,
 	StructSpecifier : AstStructSpecifier,
 	JumpStatement : AstJumpStatement,
-	ForStatement : AstForStatement,
-	ConditionStatement : AstConditionStatement
+	IterationStatement : AstIterationStatement
 };
 

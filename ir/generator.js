@@ -1178,3 +1178,78 @@ AstJumpStatement.prototype.ir = function(state, irs) {
 
 };
 
+
+/**
+ * Constructs an iteration statement
+ *
+ * @param   ast_node    Statement
+ */
+AstIterationStatement.prototype.ir = function(state, irs) {
+	var comment, init;
+
+	switch (this.mode) {
+		
+		case 'for':
+			this.ir_for(state, irs);
+			break;
+		
+		default:
+			this.ir_error("Unknown iteration statement type");
+	}
+};
+
+/**
+ * Constructs an iteration statement
+ *
+ * Note: jump semantics are a bit different in glsl as there is no true "jumping":
+ * functions are inlined, loops are unrolled, etc.
+ *
+ * @param   ast_node    Statement
+ */
+AstIterationStatement.prototype.ir_for = function(state, irs) {
+	var i, comment, cond, decl;
+
+	state.symbols.push_scope();
+
+	comment = new IrComment("", this.location);
+	irs.push(comment);
+
+	/*
+	this.init = init;
+	this.condition = condition;
+	this.rest_expression = rest_expression;
+	this.body = body;
+	*/
+
+	this.init.ir(state, irs);
+
+	irs.push(new IrInstruction("REP"));
+
+	//Evaluate loop condition and break if necessary
+	this.condition.ir(state, irs);
+	irs.push(cond = new IrInstruction("IFN", this.condition.Dest));
+	cond.d.makeSize(1);
+	
+	irs.push(new IrInstruction("BRK"));
+	irs.push(new IrInstruction("ENDIF"));
+
+	this.body.ir(state, irs);
+
+	//Evaluate rest expression (e.g. i++);
+	this.rest_expression.ir(state, irs);
+
+	irs.push(new IrInstruction("ENDREP"));
+
+	decl = [];
+	for (i = 0; i < this.init.declarations.length; i++) {
+		decl.push(state.symbols.get_variable(this.init.declarations[i].identifier).out);
+	}
+
+	comment.comment = util.format("for (%s) until (%s)", decl.join(", "), this.condition.Dest);
+	console.log(this);
+
+};
+
+
+
+
