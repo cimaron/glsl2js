@@ -132,7 +132,6 @@ HASH		^{SPC}#{SPC}
 "if"		return 'IF';
 "discard"		return 'DISCARD';
 "return"		return 'RETURN';
-"debugger"		return 'DEBUGGER';
 
 "bvec2"		return 'BVEC2';
 "bvec3"		return 'BVEC3';

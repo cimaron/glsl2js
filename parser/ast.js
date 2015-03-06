@@ -720,7 +720,6 @@ proto.toString = function() {
 		case 'continue':
 		case 'break':
 		case 'discard':
-		case 'debugger':
 			return this.mode + ";\n";
 		
 		case 'return':

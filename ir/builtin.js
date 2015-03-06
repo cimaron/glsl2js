@@ -410,7 +410,7 @@ function _builtinParseType(str) {
 }
 
 
-function symbol_table_init(table, target) {
+function symbol_table_init(state, table, target) {
 	var i, j, vars, v, entry, types, name;
 
 	vars = (target === glsl.target.vertex) ? builtin.vars.vertex : builtin.vars.fragment;
@@ -432,5 +432,7 @@ function symbol_table_init(table, target) {
 			entry.code = v[j]
 		}
 	}
+
+	state.extensions.call('symbol_table_init', [state, table, target]);
 }
 

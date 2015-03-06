@@ -44,7 +44,6 @@ GlslProgramJS.translation_table = {
 	'CMP'  : '%1.* = (%2.* < 0.0) ? %3.* : %4.*;',
 	'COS'  : '%1.* = Math.cos(%2.*);',
 	'DIV'  : '%1.* = %2.* / %3.*;',
-	'DBGR' : 'debugger;',
 	'DP2'  : '%1.x = (%2.x * %3.x) + (%2.y * %3.y);',
 	'DP3'  : '%1.x = (%2.x * %3.x) + (%2.y * %3.y) + (%2.z * %3.z);',
 	'DP4'  : '%1.x = (%2.x * %3.x) + (%2.y * %3.y) + (%2.z * %3.z) + (%2.w * %3.w);',
@@ -53,6 +52,7 @@ GlslProgramJS.translation_table = {
 	'ELSE' : '} else {',
 	'ENDIF': '}',
 	'ENDREP' : '}',
+	'EVAL' : '%1;',
 	'FLR'  : '%1.* = Math.floor(%2.*);',
 	'FRC'  : '%1.* = %2.* - Math.floor(%2.*);',
 	'IF'   : 'if (%1.*) {',
@@ -152,6 +152,13 @@ proto.instruction = function(ins) {
 
 	if (!(tpl = GlslProgramJS.translation_table[ins.op])) {
 		throw new Error(util.format("Could not translate opcode '%s'", ins.op));
+	}
+
+	if (ins.op == 'EVAL') {
+		tpl = tpl.replace(/%1/g, ins.d.full);
+		ins.d = ins.s1;
+		ins.s1 = ins.s2;
+		ins.s2 = ins.s3;
 	}
 
 	//variables

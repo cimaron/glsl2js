@@ -36,7 +36,6 @@ function GlslState(options) {
 	}
 
 	this.symbols = new SymbolTable();
-	symbol_table_init(this.symbols, options.target);
 
 	this.status = false;
 	this.translation_unit = "";

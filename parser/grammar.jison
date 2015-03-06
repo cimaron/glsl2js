@@ -1012,9 +1012,6 @@ jump_statement:
 		| 'DISCARD' ';' { /* Fragment shader only.*/
 			$$ = new AstJumpStatement('discard');
 			$$.setLocation(@1); }
-		| 'DEBUGGER' ';' {
-			$$ = new AstJumpStatement('debugger');
-			$$.setLocation(@1); }
 		;
 
 /* Line: 1715 */

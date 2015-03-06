@@ -35,6 +35,8 @@ glsl.generate = function(state) {
 		main
 		;
 
+	symbol_table_init(state, state.symbols, state.options.target);
+
 	irs = new Ir(state.options.target);
 	ast = state.getAst();
 	
@@ -1168,12 +1170,6 @@ AstJumpStatement.prototype.ir = function(state, irs) {
 				irs.push(new IrComment("return", this.location));
 			}
 		
-			break;
-		
-		case 'debugger':
-			
-			irs.push(new IrComment("debugger", this.location));
-			irs.push(new IrInstruction("DBGR"));
 			break;
 		
 		default:
