@@ -27,6 +27,7 @@ function GlslProgram() {
 
 	this.vertex_code = [];
 	this.fragment_code = [];
+	this.errors = [];
 
 	this.symbols = new GlslProgramVars();
 
@@ -63,7 +64,7 @@ proto.addObjectCode = function(object, target) {
 		try {
 			this.instruction(object.code[i]);
 		} catch (e) {
-			this.error = util.format("%s at %s:%s", e.message, e.lineNumber, e.columnNumber);
+			this.errors.push(util.format("%s at %s:%s", e.message, e.lineNumber, e.columnNumber));
 			return false;
 		}
 	}
