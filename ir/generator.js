@@ -330,7 +330,7 @@ AstExpression.prototype.ir = function(state, irs) {
 	}
 
 	//cast
-	if (this.constructor.name ==  'AstTypeSpecifier') {
+	if (this.constructor === AstTypeSpecifier) {
 		this.Type = this.type_specifier;
 		return;
 	}

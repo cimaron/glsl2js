@@ -576,10 +576,10 @@ function AstFunctionExpression(arg) {
 	AstExpression.apply(this);
 	this.cons = false;
 
-	if (arg.constructor.name === 'AstExpression') {
+	if (arg.constructor === AstExpression) {
 		this.cons = false;
 		AstExpression.call(this, '()', arg);
-	} else if (arg.constructor.name === 'AstTypeSpecifier') {
+	} else if (arg.constructor === AstTypeSpecifier) {
 		this.cons = true;
 		AstExpression.call(this, '()', arg);
 	}
