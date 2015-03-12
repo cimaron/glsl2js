@@ -946,7 +946,7 @@ AstFunctionExpression.prototype.ir = function(state, irs) {
  * @param   object   irs     IR representation
  */
 AstFunctionExpression.prototype.ir_constructor = function(state, irs) {
-	var type, comment_text, comment, i, expr, src_expr, src_i, src_c, oprd, dest;
+	var type, comment_text, comment, i, expr, src_expr, src_i, src_c, dest_i, dest_c, oprd, dest;
 
 	type = this.subexpressions[0].type_specifier;
 
@@ -973,19 +973,26 @@ AstFunctionExpression.prototype.ir_constructor = function(state, irs) {
 	src_i = 0; //Source expression index
 	src_c = 0; //Component of source expression
 
-	for (dest_i = 0; dest_i < type.size; dest_i++) {
+	dest_i = 0; //Dest index
+	dest_c = 0; //Component of dest
+
+	for (i = 0; i < type.size; i++) {
 
 		if (!src_expr) {
 			this.ir_error("Not enough parameters to constructor");				
 		}
 
 		//@todo: need to add support for > vec4
-		if (types[src_expr.Type].size > 4) {
+		if (types[src_expr.Type].components > 1) {
 			this.ir_error("Matrix components not implemented yet");	
 		}
 
 		//compute destination
-		dest = util.format("%s.%s", this.Dest, Ir.swizzles[0][dest_i]);
+		if (type.components == 1) {
+			dest = util.format("%s.%s", this.Dest, Ir.swizzles[0][dest_c]);			
+		} else {
+			dest = util.format("%s[%s].%s", this.Dest, dest_i, Ir.swizzles[0][dest_c]);
+		}
 
 		//compute source
 		oprd = new IrOperand(src_expr.Dest);
@@ -1007,6 +1014,11 @@ AstFunctionExpression.prototype.ir_constructor = function(state, irs) {
 			}
 		}
 
+		dest_c++;
+		if (dest_c >= 4) {
+			dest_c = 0;
+			dest_i++;
+		}
 	}
 
 	comment.comment = util.format("%s(%s) => %s %s", this.Type, comment_text.join(", "), this.Type, this.Dest);
