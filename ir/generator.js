@@ -983,12 +983,12 @@ AstFunctionExpression.prototype.ir_constructor = function(state, irs) {
 		}
 
 		//@todo: need to add support for > vec4
-		if (types[src_expr.Type].components > 1) {
+		if (types[src_expr.Type].slots > 1) {
 			this.ir_error("Matrix components not implemented yet");	
 		}
 
 		//compute destination
-		if (type.components == 1) {
+		if (type.slot == 1) {
 			dest = util.format("%s.%s", this.Dest, Ir.swizzles[0][dest_c]);			
 		} else {
 			dest = util.format("%s[%s].%s", this.Dest, dest_i, Ir.swizzles[0][dest_c]);
