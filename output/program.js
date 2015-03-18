@@ -32,7 +32,13 @@ function GlslProgram() {
 	this.symbols = new GlslProgramVars();
 
 	this.library = {
-		tex : function(dest, i, sampler, src, j, dim) {
+		tex2D : function(dest, i, sampler, src, j, dim) {
+			dest[i] = 0;
+			dest[i + 1] = 0;
+			dest[i + 2] = 0;
+			dest[i + 3] = 1;
+		},
+		texCUBE : function(dest, i, sampler, src, j, dim) {
 			dest[i] = 0;
 			dest[i + 1] = 0;
 			dest[i + 2] = 0;
@@ -307,12 +313,20 @@ proto.getAttributeSize = function(name) {
 /**
  * Set TEX lookup function
  *
- * 
+ * @param   function   func   Texture function 
  */
-proto.setTexFunction = function(func) {
-	this.library.tex = func;
+proto.setTexFunction2D = function(func) {
+	this.library.tex2D = func;
 };
 
+/**
+ * Set TEX lookup function
+ *
+ * @param   function   func   Texture function 
+ */
+proto.setTexFunctionCube = function(func) {
+	this.library.texCUBE = func;
+};
 
 /**
  * Program Constructor

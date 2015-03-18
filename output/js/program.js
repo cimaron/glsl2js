@@ -117,7 +117,8 @@ proto.build = function() {
 		"result_f32    = new stdlib.Float32Array(heap, 1536, 128),\n" +
 		"temp_f32      = new stdlib.Float32Array(heap, 2048, 128),\n" +
 		"jstemp        = new stdlib.Float32Array(heap, 2544,   4),\n" +
-		"tex           = foreign.tex;\n" +
+		"tex2D         = foreign.tex2D;\n" +
+		"texCUBE       = foreign.texCUBE;\n" +
 		";\n" +
 		"function vs() {\n" +
 			this.vertex_code.join("\n") + "\n" +
@@ -175,7 +176,8 @@ proto.instruction = function(ins) {
 	src.push(this.buildComponents(ins.s3));
 
 	if (ins.op == 'TEX') {
-		js = tpl.replace(/%1/g, dest.name);
+		js = tpl.replace(/tex/, 'tex' + src[2].name);
+		js = js.replace(/%1/g, dest.name);
 		js = js.replace(/%2/g, src[0].name);
 		js = this.replaceOperand(js, '%3', src[1], 0);
 		js = js.replace(/%4/g, dest.start);

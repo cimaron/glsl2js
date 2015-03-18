@@ -391,6 +391,9 @@ var builtin = {
 			},
 		"texture2D": {
 			"sampler2D,vec2:vec4" : ["TEX %1 %3 %2 \"2D\""]
+			},
+		"textureCube": {
+			"samplerCube,vec3:vec4" : ["TEX %1 %3 %2 \"CUBE\""]
 			}
 	}
 };
