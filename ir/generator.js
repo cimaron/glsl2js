@@ -479,6 +479,10 @@ AstExpression.prototype.ir_assign = function(state, irs, skip_comment/*, local*/
 		this.ir_error(util.format("Cannot assign value to constant %s", lhs.Dest));
 	}
 
+	if (lhs.Entry && lhs.Entry.readonly) {
+		this.ir_error(util.format("Cannot assign value to read-only variable %s", lhs.Entry.name));	
+	}
+
 	if (!skip_comment) {
 		com = util.format("%s => %s %s <%s>", rhs.Dest, lhs.Type, lhs.Dest, lhs.toString());
 		irs.push(new IrComment(com, this.location));
@@ -1040,7 +1044,6 @@ AstExpression.prototype.ir_field = function(state, irs) {
 	se = this.subexpressions[0];
 	se.ir(state, irs);
 
-
 	if (Ir.isSwizzle(field)) {
 
 		type = types[se.Type];
@@ -1087,6 +1090,10 @@ AstExpression.prototype.ir_field = function(state, irs) {
 		}
 
 		this.Dest = util.format("%s.%s", se.Dest, swz);
+	}
+	
+	if (se.Entry) {
+		this.Entry = se.Entry;	
 	}
 }
 

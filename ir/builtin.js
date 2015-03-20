@@ -42,8 +42,21 @@ var builtin = {
 			{
 				position : 0,
 				type : 'vec4',
+				name : 'gl_FragCoord',
+				out : 'result@0',
+				readonly : true
+			},
+			{
+				position : 0,
+				type : 'float',
+				name : 'gl_FragDepth',
+				out : 'result@0.z'
+			},
+			{
+				position : 1,
+				type : 'vec4',
 				name : 'gl_FragColor',
-				out : 'result@0'
+				out : 'result@1'
 			}
 		]
 	},
@@ -423,6 +436,7 @@ function symbol_table_init(state, table, target) {
 		entry = table.add_variable(v.name, v.type);
 		entry.position = v.position;
 		entry.out = v.out;
+		entry.readonly = v.readonly;
 	}
 
 	vars = builtin.func;
@@ -430,9 +444,9 @@ function symbol_table_init(state, table, target) {
 	for (name in vars) {
 		v = vars[name];
 		for (j in v) {
-			types = _builtinParseType(j);	
+			types = _builtinParseType(j);
 			entry = table.add_function(name, types.dest, types.src);
-			entry.code = v[j]
+			entry.code = v[j];
 		}
 	}
 
