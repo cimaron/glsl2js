@@ -26,7 +26,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 function GlslProgramJS() {
 	GlslProgram.apply(this, arguments);
 
-	this.context = new GlslProgramJSContext();
+	this.context = new GlslProgramJSContext(this.options);
 }
 
 util.inherits(GlslProgramJS, GlslProgram);
@@ -105,29 +105,42 @@ proto.toString = function(target) {
  * @return  function
  */
 proto.build = function() {
+	var i, module, shaders, init, start, vars;
 
-	var module, shaders;
+	vars = {
+		uniform_f32   : Math.max(this.options.max_vertex_uniform_vectors, this.options.max_fragment_uniform_vectors),
+		attribute_f32 : this.options.max_vertex_attribute_vectors,
+		varying_f32   : this.options.max_varying_vectors,
+		result_f32    : 2,
+		temp_f32      : this.options.max_register_vectors,
+		jstemp_f32    : 1
+	}
 
-	module = new Function("stdlib", "foreign", "heap",
-		"//\"use asm\";\n" +
-		"var\n" +
-		"uniform_f32   = new stdlib.Float32Array(heap,   0, 128),\n" +
-		"attribute_f32 = new stdlib.Float32Array(heap, 512, 128),\n" +
-		"varying_f32   = new stdlib.Float32Array(heap, 1024, 128),\n" +
-		"result_f32    = new stdlib.Float32Array(heap, 1536, 128),\n" +
-		"temp_f32      = new stdlib.Float32Array(heap, 2048, 128),\n" +
-		"jstemp        = new stdlib.Float32Array(heap, 2544,   4),\n" +
-		"tex2D         = foreign.tex2D;\n" +
-		"texCUBE       = foreign.texCUBE;\n" +
-		";\n" +
-		"function vs() {\n" +
-			this.vertex_code.join("\n") + "\n" +
-		"}\n" +
-		"function fs() {\n" +
-			this.fragment_code.join("\n") + "\n" +
-		"}\n" +
-		"return { fragment : fs, vertex : vs };"
-	);
+	code = [];
+	//init.push("\"use asm\";");
+	code.push("var");
+
+	start = 0;
+	for (i in vars) {
+		count = vars[i];
+		code.push(util.format("%s = new stdlib.Float32Array(heap, %d, %d),", i, start, count * 4));
+		start += count * 16;
+	}
+
+	code.push("tex2D = foreign.tex2D,");
+	code.push("texCUBE = foreign.texCUBE;");
+
+	code.push("function vs() {");
+	code.push(this.vertex_code.join("\n"));
+	code.push("}");
+
+	code.push("function fs() {");
+	code.push(this.fragment_code.join("\n"));
+	code.push("}");
+	
+	code.push("return { fragment : fs, vertex : vs };");
+
+	module = new Function("stdlib", "foreign", "heap", code.join("\n"));
 
 	shaders = module(window, this.library, this.context.heap);
 
@@ -229,7 +242,7 @@ proto.replaceOperand = function(tpl, from, op, n) {
 		name = op.name;
 	} else {
 		if (op.jstemp && op.jstemp[n]) {
-			name = 'jstemp';
+			name = 'jstemp_f32';
 			addr = n;
 		} else {
 			name = op.name;
@@ -316,7 +329,7 @@ proto.generateTemp = function(dest, src, tpl) {
 			op = src[c];
 			if (op && op.name == dest.name && op.start == dest.start && written.indexOf(op.components[i]) != -1) {
 				op.jstemp[i] = true;
-				this.current.push(util.format("jstemp[%s] = %s[%s]", i, op.name, op.start + op.components[i]));
+				this.current.push(util.format("jstemp_f32[%s] = %s[%s]", i, op.name, op.start + op.components[i]));
 			}
 		}
 	}

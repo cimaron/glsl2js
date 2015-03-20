@@ -22,14 +22,18 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 /**
  * GlslProgram class
+ *
+ * @param   object   options   Configuration
  */
-function GlslProgram() {
+function GlslProgram(options) {
 
+	this.setOptions(options);
+	
 	this.vertex_code = [];
 	this.fragment_code = [];
 	this.errors = [];
 
-	this.symbols = new GlslProgramVars();
+	this.symbols = new GlslProgramVars(this.options);
 
 	this.library = {
 		tex2D : function(dest, i, sampler, src, j, dim) {
@@ -50,7 +54,34 @@ function GlslProgram() {
 	this.shader = null;
 }
 
+
+//@note: Double webgl minimum
+GlslProgram.constants = {
+	MAX_VERTEX_ATTRIBUTE_VECTORS : 16,
+	MAX_VERTEX_UNIFORM_VECTORS : 256,
+	MAX_VARYING_VECTORS : 16,
+	MAX_FRAGMENT_UNIFORM_VECTORS : 32,
+	MAX_REGISTER_VECTORS : 128
+};
+
 var proto = GlslProgram.prototype;
+
+/**
+ * Set program options
+ *
+ * @param   object   options   Configuration
+ */
+proto.setOptions = function(options) {
+	var i, n;
+
+	this.options = {};
+	options = options || {};
+
+	for (i in GlslProgram.constants) {
+		n = i.toLowerCase();
+		this.options[n] = options[n] || GlslProgram.constants[i];	
+	}
+};
 
 /**
  * Translates IR code into a javascript representation
@@ -333,7 +364,7 @@ proto.setTexFunctionCube = function(func) {
  *
  * @param   string   type   Program type
  */
-glsl.createProgram = function(type) {
+glsl.createProgram = function(type, options) {
 	var cons;
 
 	cons = this.program[type];
@@ -341,8 +372,8 @@ glsl.createProgram = function(type) {
 	if (!cons) {
 		cons = GlslProgram;
 	}
-	
-	return new cons();
+
+	return new cons(options);
 }
 
 glsl.program = {};

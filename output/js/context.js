@@ -23,14 +23,32 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 /**
  * GlslProgramJSContext class
  */
-function GlslProgramJSContext() {
+function GlslProgramJSContext(options) {
+	var uniform, attribute, varying, result, temp, jstemp, total, start;
 
-	this.heap = new ArrayBuffer(640 * 4);
+	uniform = Math.max(options.max_vertex_uniform_vectors, options.max_fragment_uniform_vectors);
+	attribute = options.max_vertex_attribute_vectors;
+	varying = options.max_varying_vectors;
+	result = 2;	
+	temp = options.max_register_vectors;
+	jstemp = 1;
 
-	this.uniform_f32 = new Float32Array(this.heap, 0, 128);
-	this.attribute_f32 = new Float32Array(this.heap, 128 * 4, 128);
-	this.varying_f32 = new Float32Array(this.heap, 256 * 4, 128);
-	this.result_f32 = new Float32Array(this.heap, 384 * 4, 128);
+	total = uniform + attribute + varying + result + temp + jstemp;
+
+	//Each vector is 16 bytes (4 comp * 4 bytes)
+	this.heap = new ArrayBuffer(total * 16);
+
+	start = 0;
+	this.uniform_f32 = new Float32Array(this.heap, start, uniform * 4);
+
+	start += (uniform * 16);
+	this.attribute_f32 = new Float32Array(this.heap, start, attribute * 4);
+
+	start += (attribute * 16);
+	this.varying_f32 = new Float32Array(this.heap, start, varying * 4);
+
+	start += (varying * 16);
+	this.result_f32 = new Float32Array(this.heap, start, result * 4);
 }
 
 var proto = GlslProgramJSContext.prototype;
