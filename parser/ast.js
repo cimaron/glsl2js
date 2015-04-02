@@ -626,7 +626,7 @@ proto.toString = function() {
 			break;
 		
 		default:
-			return AstNode.toString.apply(this);
+			return AstNode.prototype.toString.call(this);
 	}
 };
 
