@@ -43,7 +43,7 @@ glsl.on = function(name, listener) {
  * @return  array
  */
 glsl.fire = function(name, args) {
-	var list, ret, i;
+	var list, ret, e, i;
 
 	list = this.events[name];
 	ret = [];
@@ -69,7 +69,7 @@ glsl.fire = function(name, args) {
 glsl.removeListener = function(name, listener) {
 	var idx;
 
-	if (this.events[name] && (idx = this.events[name].indexOf(listener)) !== false) {
+	if (this.events[name] && (idx = this.events[name].indexOf(listener)) !== -1) {
 		this.events[name].splice(idx, 1);
 	}
 };
