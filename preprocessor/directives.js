@@ -51,7 +51,7 @@ Preprocessor.modules.directives = {
 	},
 
 	processLine : function(line, i) {
-		var d, matches, raw, e, sub, cond, lmatches;
+		var d, matches, raw, e, data, sub, cond, lmatches, res;
 
 		matches = line.match(/^([ \t]*)#(.*)$/);
 		if (!matches) {
@@ -72,7 +72,16 @@ Preprocessor.modules.directives = {
 		}
 
 		lmatches = raw.split(/\s+/);
-		
+
+		data = {
+			modstate : this.state,
+			line : i + 1,
+			text : line,
+			matches : lmatches
+		};
+
+		res = glsl.fire('preprocess.directive', [this.state.compile_state, data]);
+
 		try {
 
 			switch (lmatches[0]) {
