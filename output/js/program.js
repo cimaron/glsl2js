@@ -259,7 +259,7 @@ proto.replaceOperand = function(tpl, from, op, n) {
 	}
 
 	for (i = 0; i < swz.length; i++) {
-		out = out.replace(new RegExp(from + '\.' + swz[i], 'g'), util.format("%s[%s]", name, op.start + i));
+		out = out.replace(new RegExp(from + '\.' + swz[i], 'g'), op.raw ? name : util.format("%s[%s]", name, op.start + i));
 	}
 
 	return out;
