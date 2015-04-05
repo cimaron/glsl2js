@@ -72,17 +72,23 @@ glsl.parse = function(src, options) {
 
 	state = new GlslState(options);
 	state.setSource(src);
+	this.fire('init', [state]);
 
 	//Preprocess
 	result = this.preprocessor.process(state);
+	this.fire('preprocess', [state]);
 
 	//Parse into AST
 	if (result) {
 		result = this.parser.parse(state);
+		this.fire('parse', [state]);
 	}
 
 	if (result) {
 		state.status = true;	
+		this.fire('complete', [state]);
+	} else {
+		this.fire('fail', [state]);
 	}
 
 	return state;

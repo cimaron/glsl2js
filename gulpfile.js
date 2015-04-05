@@ -90,6 +90,7 @@ gulp.task('glsl-all', ['_parser', 'generator'], function() {
 	return gulp.src([
 		'glsl.js',
 		'library/util.js',
+		'event.js',
 		'state.js',
 		'build/parser.js',
 		'build/ir.js'
@@ -103,6 +104,7 @@ gulp.task('glsl-parser', ['_parser'], function() {
 	return gulp.src([
 		'glsl.js',
 		'library/util.js',
+		'event.js',
 		'state.js',
 		'build/parser.js'
 		])
