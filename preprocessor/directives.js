@@ -53,7 +53,7 @@ Preprocessor.modules.directives = {
 	processLine : function(line, i) {
 		var d, matches, raw, e, sub, cond, lmatches;
 
-		matches = line.match(/^([ \t]*)#(.*)$/);
+		matches = line.match(/^([ \t]*)#(.*?)[ \t]*$/);
 		if (!matches) {
 
 			if (this.state.cond_stack.length !== 0 && !this.state.cond_stack.slice(-1)[0]) {
