@@ -99,10 +99,11 @@ Preprocessor.modules.directives = {
 	},
 
 	processDefines : function(line, i) {
+		var d;
 		
 		this.state.defines.__LINE__ = i + 1;
 
-		for (var d in this.state.defines) {
+		for (d in this.state.defines) {
 			//easy global replace
 			line = line.split(new RegExp('\\b' + d + '\\b')).join(this.state.defines[d]);
 		}
@@ -112,11 +113,16 @@ Preprocessor.modules.directives = {
 
 	define : function(line, matches) {
 
-		if (matches.length <= 1 || matches.length > 3) {
+		if (matches.length <= 1) {
 			throw new Error("Syntax error in #define");
 		}
 
-		this.state.defines[matches[1]] = matches[2] || "";		
+		//Match identifier followed by replacement
+		matches = line.match(/^[ \t]*#define[ \t]+([_a-zA-Z][_a-zA-Z0-9]*)[ \t]+(.*?)[ \t]*$/);
+
+		if (matches) {
+			this.state.defines[matches[1]] = matches[2] || "";
+		}
 	},
 
 	extension : function(line, matches) {
