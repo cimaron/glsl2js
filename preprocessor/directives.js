@@ -102,9 +102,9 @@ Preprocessor.modules.directives = {
 		
 		this.state.defines.__LINE__ = i + 1;
 
-		for (d in this.state.defines) {
+		for (var d in this.state.defines) {
 			//easy global replace
-			line = line.split(d).join(this.state.defines[d]);
+			line = line.split(new RegExp('\\b' + d + '\\b')).join(this.state.defines[d]);
 		}
 
 		return line;
