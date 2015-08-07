@@ -304,7 +304,10 @@ AstCompoundStatement.prototype.ir = function(state, irs) {
  * @param   object   irs     IR representation
  */
 AstExpressionStatement.prototype.ir = function(state, irs) {
-	this.expression.ir(state, irs);
+
+	if (this.expression !== null) {
+		this.expression.ir(state, irs);
+	}
 };
 
 

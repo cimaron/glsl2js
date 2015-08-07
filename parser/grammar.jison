@@ -911,7 +911,9 @@ statement_list:
 
 /* Line: 1567 */
 expression_statement:
-		  ';'
+		  ';' {
+			  	$$ = new AstExpressionStatement(null);
+				$$.setLocation(@1); }
 		| expression ';' {
 				$$ = new AstExpressionStatement($1);
 				$$.setLocation(@1); }
