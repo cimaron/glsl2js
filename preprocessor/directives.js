@@ -26,9 +26,11 @@ Preprocessor.modules.directives = {
 		defines : {}
 	},
 
-	process : function(src, state) {
+	process : function(src, state, options) {
 		var i, l;
-		
+
+		this.options = options || {};
+
 		this.state.lines = src.split("\n");
 		this.state.defines = {
 			GL_ES : '1',
@@ -100,12 +102,14 @@ Preprocessor.modules.directives = {
 
 	processDefines : function(line, i) {
 		var d;
-		
+
 		this.state.defines.__LINE__ = i + 1;
 
-		for (d in this.state.defines) {
-			//easy global replace
-			line = line.split(new RegExp('\\b' + d + '\\b')).join(this.state.defines[d]);
+		if (this.options.processDefines !== false ) {
+			for (d in this.state.defines) {
+				//easy global replace
+				line = line.split(new RegExp('\\b' + d + '\\b')).join(this.state.defines[d]);
+			}
 		}
 
 		return line;

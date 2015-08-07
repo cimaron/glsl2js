@@ -29,15 +29,15 @@ Preprocessor.modules = {};
 
 var proto = Preprocessor.prototype;
 
-proto.process = function(state) {
+proto.process = function(state, options) {
 	var m,
-	    out = state.getSource()
+		out = state.getSource()
 		;
 
 	for (m in Preprocessor.modules) {
 
 		try {
-			out = Preprocessor.modules[m].process(out, state);
+			out = Preprocessor.modules[m].process(out, state, options);
 		} catch (e) {
 			state.addError(e.message, e.lineNumber, e.columnNumber);
 			return false;

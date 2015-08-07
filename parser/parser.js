@@ -75,7 +75,7 @@ glsl.parse = function(src, options) {
 	this.fire('init', [state]);
 
 	//Preprocess
-	result = this.preprocessor.process(state);
+	result = this.preprocessor.process(state, options);
 	this.fire('preprocess', [state]);
 
 	//Parse into AST
