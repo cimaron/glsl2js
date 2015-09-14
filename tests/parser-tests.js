@@ -19,6 +19,18 @@ function parseVertex( source ) {
 
 describe( 'Regression Parser Tests', function() {
 
+	it.only( 'Commas', function() {
+		var parsed = parseFragment([
+			'void main() {',
+				'vec3 a;',
+                'a.x = 1, a.y = 2;',
+				'gl_FragColor = a-1.0;',
+			'}'
+		].join('\n') );
+		expect( parsed.ast.toString() ).to.contain( 'a.x' );
+		expect( parsed.ast.toString() ).to.contain( 'a.y' );
+	});
+
 	it( 'Parses a substraction correctly', function() {
 		var parsed = parseFragment([
 			'void main() {',
