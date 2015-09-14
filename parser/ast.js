@@ -106,7 +106,8 @@ var ast_operators = [
 	"&&",
 	"^^",
 	"||",
-	"!",		
+	"!",
+	",",
 	"*=",
 	"/=",
 	"%=",
@@ -358,6 +359,10 @@ proto.toString = function() {
 		
 		case 'bool':
 			output = util.format("%s", this.primary_expression.bool_constant == 'true' ? 'true' : 'false');
+			break;
+
+		case ',':
+			output = this.expressions.join(", ");
 			break;
 
 	}
