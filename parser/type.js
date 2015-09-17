@@ -98,7 +98,8 @@ var types = {
 	mat3 : new Type("mat3", 9, 3, 'float'),
 	mat4 : new Type("mat4", 16, 4, 'float'),
 	sampler2D : new Type("sampler2D", 1, 1),
-	samplerCube : new Type("samplerCube", 1, 1)
+	samplerCube : new Type("samplerCube", 1, 1),
+	struct : new Type("struct", 1, 1 )
 };
 
 //Compatibility
